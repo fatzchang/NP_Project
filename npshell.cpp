@@ -30,15 +30,6 @@ int main() {
 
         // last command
         cout << "command: " << input << endl;
-        
-        // if (regex_search(input, s, r)) {
-        //     cout << s.position() << endl;
-        //     // for (int i = 0; i < s.size(); i++) {
-        //     //     cout << i << ": " << s[i] << endl;
-        //     // }
-        // } else {
-        //     cout << "not matched" << endl; 
-        // }
 
         // not built-in command
         // while (input.find("|") != 0) {
