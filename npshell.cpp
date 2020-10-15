@@ -73,6 +73,8 @@ int main() {
                 pipe_counter = (pipe_counter + 1) % 2;
                 cmd_order = MEDIUM_COMMAND;
                 cmd.clear();
+            } else if (token == "exit") {
+                return 0;
             } else  {
                 cmd.push_back(t); 
             }
