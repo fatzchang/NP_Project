@@ -1,40 +1,80 @@
 #include "npshell.h"
 #include "./utils/utils.h"
+#include "./utils/process.h"
+
 #include <string>
+#include <sstream>
 #include <iostream>
 #include <regex>
 #include <vector> 
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/wait.h>
-#include <cstring>
+
 
 using namespace std;
 
 // TODO: clear parent process's pipe fd
 int main() {
-    string PATH = "bin/";
-    regex r("\\s(\\||!)");
+    // signal(SIGCHLD, psignal_handler);
+    regex r("\\s(\\||\\!)");
     string input;
     string cmd;
     smatch s;
-    int cmd_order = FIRST_COMMAND;
-    
     // represent previous pipe and newly created pipe
     int pipefd[2][2];
-    int pipe_counter = 0; 
-   
+    int pipe_counter = 0;
+    int cmd_order = FIRST_COMMAND;
+
+    setenv("PATH", "./bin", 1);
+
     while(1) {
         cout << "% ";
         getline(cin, input);
+        stringstream ss(input);
+        string token;
+        vector<char*> cmd;
+        vector<pid_t> pid_table;
 
-        while (regex_search(input, s, r))
-        {
-            cmd = input.substr(0, s.position());
-            run_command(cmd, cmd_order, pipefd, pipe_counter);
-            pipe_counter = (pipe_counter + 1) % 2;
-            input = input.substr(s.position() + (s.size() + 1));
-            cmd_order = MEDIUM_COMMAND;
+        while(ss >> token) {
+            char *t = (char *)malloc(sizeof(char)*10);
+            for (size_t i = 0; i < 20; i++) {
+                t[i] = '\0';
+            }
+            
+            token.copy(t, token.size());
+
+            if (token == "setenv") {
+                string env, value;
+                if (ss >> env && ss >> value) {
+                    setenv(env.c_str(), value.c_str(), 1);
+                } else {
+                    cerr << "missing arguments" << endl;
+                }
+            } else if (token == "printenv") {
+                string env;
+                if (ss >> env) {
+                    cout << getenv(env.c_str()) << endl;
+                }else {
+                    cerr << "missing arguments" << endl;
+                }
+            } else if (token == ">") {
+                string filename;
+                if (ss >> filename) {
+                    
+                }
+            } else if (token == "|" || token == "!") {
+                // deal with pipe
+                cmd.push_back(NULL);
+                collect_zombie(pid_table);
+                pid_t child_pid = run_command(cmd, cmd_order, pipefd, pipe_counter);
+                pid_table.push_back(child_pid);
+                pipe_counter = (pipe_counter + 1) % 2;
+                cmd_order = MEDIUM_COMMAND;
+                cmd.clear();
+            } else  {
+                cmd.push_back(t); 
+            }
         }
 
         if (cmd_order == FIRST_COMMAND) {
@@ -44,54 +84,14 @@ int main() {
             // the last command
             cmd_order = LAST_COMMAND;
         }
-        
-        run_command(input, cmd_order, pipefd, pipe_counter);
+        cmd.push_back(NULL);
+        collect_zombie(pid_table);
+        pid_t child_pid = run_command(cmd, cmd_order, pipefd, pipe_counter);
+        waitpid(child_pid, NULL, 0);
         cmd_order = FIRST_COMMAND;
+
+        // TODO: free malloc
     }
     return 0;
 }
 
-void run_command(string cmd_string, int cmd_order, int pipefd[2][2], int pipe_counter) {
-    if (cmd_order != ONLY_COMMAND && cmd_order != LAST_COMMAND) {
-        pipe(pipefd[pipe_counter]);
-    }
-    pid_t pid = fork();
-
-    if (pid < 0) {
-        perror("fork err");
-    } else if (pid == 0) {
-        // child process
-        if (cmd_order != FIRST_COMMAND && cmd_order != ONLY_COMMAND) {
-            // link stdin with previous pipe's read end
-            link_pipe_read(pipefd[(pipe_counter + 1) % 2]);
-        }
-        if (cmd_order != LAST_COMMAND && cmd_order != ONLY_COMMAND) {
-            // link stdout with newly created pipe's write end
-            link_pipe_write(pipefd[pipe_counter]);
-        }
-
-        // vector<string> parsed_vector = parse_cmd(cmd_string);
-        // char *arg_arr[128][11];
-        // for(size_t i = 0; i < parsed_vector.size(); i++) {
-        //     parsed_vector.at(i).copy(*arg_arr[i], 10, 0);
-        // }
-        // strcpy(*arg_arr[0], "ls");
-
-        // char *const arr[] = {"sop", NULL};
-        // execv("./bin/sop", arr);
-        // execlp("./bin/sop", "", NULL);
-        cout << "hello world" << endl;
-        exit(0);
-        
-    } else {
-        wait(NULL);
-        // if (cmd_order == LAST_COMMAND || cmd_order == ONLY_COMMAND) {
-        //     // block waiting last command
-        //     wait(NULL);
-        // } else {
-        //     // non-block waiting medium command to prevent zombie process
-        //     int stat;
-        //     waitpid(pid, &stat, WNOHANG);
-        // }
-    }
-}

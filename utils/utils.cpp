@@ -3,8 +3,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
-
-using namespace std;
+#include <iostream>
 
 // pipe utils
 // stdin -> pipe's read end
@@ -19,26 +18,38 @@ void link_pipe_write(int pipefd[2]) {
     dup(pipefd[1]);
 }
 
-// check file
-// bool file_exist(string path) {
-//     return access(path.c_str(), F_OK) == 0;
-// }
 
+pid_t run_command(
+    std::vector<char*> cmd, 
+    int cmd_order, 
+    int pipefd[2][2], 
+    int pipe_counter) 
+{
+    if (cmd_order == FIRST_COMMAND || cmd_order == MEDIUM_COMMAND) {
+        pipe(pipefd[pipe_counter]);
+    }
+    pid_t pid = fork();
+    
+    if (pid < 0) {
+        std::cerr << "fork err" << std::endl;
+    } else if (pid == 0) {
+        if (cmd_order != ONLY_COMMAND) {
+            if (cmd_order != FIRST_COMMAND) {
+                // link stdin with previous pipe's read end
+                link_pipe_read(pipefd[(pipe_counter + 1) % 2]);    
+            }
 
-// parse string to command vector
-vector<string> parse_cmd(string cmd_string) {
-    vector<string> v;
-    stringstream ss(cmd_string);
-    string token;
+            if (cmd_order != LAST_COMMAND) {
+                // link stdout with newly created pipe's write end
+                link_pipe_write(pipefd[pipe_counter]);
+            }
+        }
 
-    while(ss>>token) {
-        v.push_back(token.c_str());
+        execvp(cmd[0], &cmd[0]);
+        std::string err_str;
+        std::cerr << "Unknown Command: [" << cmd[0] << "]" << std::endl;
+        exit(0);
     }
 
-    v.push_back(NULL);
-
-    return v;
+    return pid;
 }
-
-
-
