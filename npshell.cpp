@@ -5,7 +5,6 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <regex>
 #include <vector> 
 #include <unistd.h>
 #include <stdlib.h>
@@ -16,11 +15,8 @@ using namespace std;
 
 // TODO: clear parent process's pipe fd
 int main() {
-    // signal(SIGCHLD, psignal_handler);
-    regex r("\\s(\\||\\!)");
     string input;
     string cmd;
-    smatch s;
     // represent previous pipe and newly created pipe
     int pipefd[2][2];
     int pipe_counter = 0;
@@ -59,15 +55,20 @@ int main() {
                     cerr << "missing arguments" << endl;
                 }
             } else if (token == ">") {
+                cmd.push_back(NULL);
                 string filename;
                 if (ss >> filename) {
-                    
+                    pid_t child_pid = run_command(cmd, cmd_order, pipefd, pipe_counter, false);
+                    pipe_counter = (pipe_counter + 1) % 2;
+                    pid_t output_child_pid = output(cmd, filename, pipefd, pipe_counter);
+                    pid_table.push_back(child_pid);
                 }
+                cmd.clear();
             } else if (token == "|" || token == "!") {
                 // deal with pipe
                 cmd.push_back(NULL);
                 collect_zombie(pid_table);
-                pid_t child_pid = run_command(cmd, cmd_order, pipefd, pipe_counter);
+                pid_t child_pid = run_command(cmd, cmd_order, pipefd, pipe_counter, token == "!");
                 pid_table.push_back(child_pid);
                 pipe_counter = (pipe_counter + 1) % 2;
                 cmd_order = MEDIUM_COMMAND;
@@ -86,7 +87,7 @@ int main() {
         }
         cmd.push_back(NULL);
         collect_zombie(pid_table);
-        pid_t child_pid = run_command(cmd, cmd_order, pipefd, pipe_counter);
+        pid_t child_pid = run_command(cmd, cmd_order, pipefd, pipe_counter, false);
         waitpid(child_pid, NULL, 0);
         cmd_order = FIRST_COMMAND;
 

@@ -1,5 +1,5 @@
 npshell: npshell.cpp ./utils/utils.cpp ./utils/process.cpp
-	g++ -g -std=c++11 -o npshell npshell.cpp ./utils/utils.cpp ./utils/process.cpp
+	g++ -g -o npshell npshell.cpp ./utils/utils.cpp ./utils/process.cpp
 
 commands: ./commands/noop.cpp ./commands/number.cpp ./commands/removetag.cpp ./commands/removetag0.cpp
 	g++ -o ./bin/noop ./commands/noop.cpp
