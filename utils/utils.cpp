@@ -17,13 +17,14 @@ void link_pipe_read(int pipefd[2]) {
 }
 
 // stdout -> pipe's write end
-void link_pipe_write(int pipefd[2]) {
+void link_pipe_write(int pipefd[2], bool pipe_err) {
     close(STDOUT_FILENO);
     dup(pipefd[1]);
-    // if (pipe_err) {
-    //     close(STDERR_FILENO);
-    //     dup(pipefd[1]);
-    // }
+
+    if (pipe_err) {
+        close(STDERR_FILENO);
+        dup(pipefd[1]);
+    }
 }
 
 // return pipe read end
@@ -45,7 +46,7 @@ map<string, int> run_cmd(vector<char*> &cmd, string token, int prev_pipe[2], boo
             link_pipe_read(prev_pipe);
         }
         if (!is_last) {
-            link_pipe_write(pipefd);
+            link_pipe_write(pipefd, token == "!");
         }
         close(prev_pipe[0]);
         close(prev_pipe[1]);
@@ -66,22 +67,21 @@ map<string, int> run_cmd(vector<char*> &cmd, string token, int prev_pipe[2], boo
 }
 
 
-
 // pid_t output(
-//     std::vector<char*> cmd,
-//     std::string filename,
+//     vector<char*> cmd,
+//     string filename,
 //     int pipefd[2][2], 
 //     int pipe_counter
 // ) {
 //     pid_t pid = fork();
 //     if (pid < 0) {
-//         std::cerr << "fork err" << std::endl;
+//         cerr << "fork err" << endl;
 //     } else if (pid == 0) {
 //         link_pipe_read(pipefd[(pipe_counter + 1) % 2]);
-//         std::ofstream my_file(filename);
-//         std::string buffer;
-//         while (std::getline(std::cin, buffer)) {
-//             my_file << buffer << std::endl;
+//         ofstream my_file(filename);
+//         string buffer;
+//         while (getline(cin, buffer)) {
+//             my_file << buffer << endl;
 //         }
 //         my_file.close();
 //         exit(0);
