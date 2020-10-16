@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <cstring>
 
 
 using namespace std;
@@ -33,10 +34,8 @@ int main() {
         vector<pid_t> pid_table;
 
         while(ss >> token) {
-            char *t = (char *)malloc(sizeof(char)*10);
-            for (size_t i = 0; i < 20; i++) {
-                t[i] = '\0';
-            }
+            char *t = (char *)malloc(sizeof(char)*(token.size()+1));
+            memset(t, 0, sizeof(char) * (token.size()+1));
             
             token.copy(t, token.size());
 

@@ -6,11 +6,15 @@
 #include <iostream>
 #include <fstream>
 
+#include <cstring>
+
+
 // pipe utils
 // stdin -> pipe's read end
 void link_pipe_read(int pipefd[2]) {
    close(STDIN_FILENO);
    dup(pipefd[0]);
+   close(pipefd[0]);
 }
 
 // stdout -> pipe's write end
@@ -21,6 +25,7 @@ void link_pipe_write(int pipefd[2], bool pipe_err) {
         close(STDERR_FILENO);
         dup(pipefd[1]);
     }
+    close(pipefd[1]);
 }
 
 pid_t run_command(
@@ -33,8 +38,9 @@ pid_t run_command(
     if (cmd_order == FIRST_COMMAND || cmd_order == MEDIUM_COMMAND) {
         pipe(pipefd[pipe_counter]);
     }
+
     pid_t pid = fork();
-    
+
     if (pid < 0) {
         std::cerr << "fork err" << std::endl;
     } else if (pid == 0) {
@@ -50,7 +56,7 @@ pid_t run_command(
             }
         }
 
-        execvp(cmd[0], &cmd[0]);
+        execvp(cmd[0], &cmd[0]);        
 
         // error handle
         std::string err_str;
@@ -63,6 +69,16 @@ pid_t run_command(
         exit(0);
     } else {
         // TODO: check if OK
+        if (cmd_order != ONLY_COMMAND) {
+            // close(pipefd[pipe_counter][0]);
+            close(pipefd[pipe_counter][1]);
+
+            if (cmd_order != FIRST_COMMAND) {
+                close(pipefd[(pipe_counter+1)%2][0]);
+            }
+        }
+
+        
         // close parent's previous pipefd
         // if(pipefd[(pipe_counter + 1) % 2][0] > 0) {
         //     close(pipefd[(pipe_counter + 1) % 2][0]);

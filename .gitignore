@@ -1,8 +1,4 @@
-/bin/noop.cpp
-/bin/number.cpp
-/bin/removetag.cpp
-/bin/removetag0.cpp
+/bin
+/commands
 
-/bin/cat
-/bin/ls
 /npshell

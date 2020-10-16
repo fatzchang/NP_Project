@@ -6,5 +6,6 @@
     "iostream": "cpp",
     "*.tcc": "cpp",
     "istream": "cpp"
-  }
+  },
+  "editor.tabSize": 4,
 }
