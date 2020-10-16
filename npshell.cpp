@@ -9,21 +9,15 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <map>
 #include <cstring>
-
 
 using namespace std;
 
-// TODO: clear parent process's pipe fd
 int main() {
     string input;
-    string cmd;
-    // represent previous pipe and newly created pipe
-    int pipefd[2][2];
-    int pipe_counter = 0;
-    int cmd_order = FIRST_COMMAND;
-
     setenv("PATH", "./bin", 1);
+    vector<map<string, int>> num_pipe_info;
 
     while(1) {
         cout << "% ";
@@ -32,11 +26,11 @@ int main() {
         string token;
         vector<char*> cmd;
         vector<pid_t> pid_table;
-
+        int prev_pipe[2] = {-1, -1};
+        
         while(ss >> token) {
             char *t = (char *)malloc(sizeof(char)*(token.size()+1));
             memset(t, 0, sizeof(char) * (token.size()+1));
-            
             token.copy(t, token.size());
 
             if (token == "setenv") {
@@ -53,25 +47,19 @@ int main() {
                 }else {
                     cerr << "missing arguments" << endl;
                 }
-            } else if (token == ">") {
-                cmd.push_back(NULL);
-                string filename;
-                if (ss >> filename) {
-                    pid_t child_pid = run_command(cmd, cmd_order, pipefd, pipe_counter, false);
-                    pipe_counter = (pipe_counter + 1) % 2;
-                    pid_t output_child_pid = output(cmd, filename, pipefd, pipe_counter);
-                    pid_table.push_back(child_pid);
-                }
-                cmd.clear();
-            } else if (token == "|" || token == "!") {
-                // deal with pipe
-                cmd.push_back(NULL);
+            } else if (token == "|" || token == "!" || token == ">") {
                 collect_zombie(pid_table);
-                pid_t child_pid = run_command(cmd, cmd_order, pipefd, pipe_counter, token == "!");
-                pid_table.push_back(child_pid);
-                pipe_counter = (pipe_counter + 1) % 2;
-                cmd_order = MEDIUM_COMMAND;
+                map<string, int> child_info = run_cmd(cmd, token, prev_pipe, false);
+                pid_table.push_back(child_info.find("pid")->second);
+                // close previous pipe
+                close(prev_pipe[0]);
+                close(prev_pipe[1]);
+                // save recent pipe
+                prev_pipe[0] = child_info.find("read")->second;
+                prev_pipe[1] = child_info.find("write")->second;
                 cmd.clear();
+                // insert counter
+
             } else if (token == "exit") {
                 return 0;
             } else  {
@@ -79,21 +67,19 @@ int main() {
             }
         }
 
-        if (cmd_order == FIRST_COMMAND) {
-            // only one command
-            cmd_order = ONLY_COMMAND;
-        } else {
-            // the last command
-            cmd_order = LAST_COMMAND;
-        }
-        cmd.push_back(NULL);
         collect_zombie(pid_table);
-        pid_t child_pid = run_command(cmd, cmd_order, pipefd, pipe_counter, false);
-        waitpid(child_pid, NULL, 0);
-        cmd_order = FIRST_COMMAND;
+        map<string, int> child_info = run_cmd(cmd, "\0", prev_pipe, true);
+        // if |number, push child_info to list
+        close(prev_pipe[0]);
+        close(prev_pipe[1]);
+        // reset prev_pipe
+        prev_pipe[0] = -1;
+        prev_pipe[1] = -1;
+        cmd.clear();
+        waitpid(child_info.find("pid")->second, NULL, 0);
 
         // TODO: free malloc
     }
+
     return 0;
 }
-
