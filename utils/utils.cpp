@@ -55,7 +55,7 @@ map<string, int> run_cmd(vector<char*> &cmd, string token, int prev_pipe[2], boo
 
         execvp(cmd[0], &cmd[0]);
 
-        cerr << "Unknown Command: [" << cmd[0] << "]" << endl;
+        cerr << "Unknown Command: [" << cmd[0] << "]." << endl;
         exit(0);
     } else {
         map<string, int> m;

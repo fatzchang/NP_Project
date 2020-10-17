@@ -44,6 +44,7 @@ int main() {
                 string env;
                 if (ss >> env) {
                     cout << getenv(env.c_str()) << endl;
+                    // TODO: skip if no env data
                 }else {
                     cerr << "missing arguments" << endl;
                 }
@@ -87,7 +88,7 @@ int main() {
         cmd.clear();
         waitpid(child_info.find("pid")->second, NULL, 0);
 
-        // TODO: free malloc
+        // TODO: free malloc, combine with cmd.clear
     }
 
     return 0;
