@@ -48,6 +48,8 @@ map<string, int> run_cmd(vector<char*> &cmd, string token, int prev_pipe[2], boo
         if (!is_last) {
             link_pipe_write(pipefd, token == "!");
         }
+
+        // child close previous pipefd
         close(prev_pipe[0]);
         close(prev_pipe[1]);
 
@@ -67,25 +69,26 @@ map<string, int> run_cmd(vector<char*> &cmd, string token, int prev_pipe[2], boo
 }
 
 
-// pid_t output(
-//     vector<char*> cmd,
-//     string filename,
-//     int pipefd[2][2], 
-//     int pipe_counter
-// ) {
-//     pid_t pid = fork();
-//     if (pid < 0) {
-//         cerr << "fork err" << endl;
-//     } else if (pid == 0) {
-//         link_pipe_read(pipefd[(pipe_counter + 1) % 2]);
-//         ofstream my_file(filename);
-//         string buffer;
-//         while (getline(cin, buffer)) {
-//             my_file << buffer << endl;
-//         }
-//         my_file.close();
-//         exit(0);
-//     }
+pid_t output(
+    string filename,
+    int prev_pipe[2]
+) {
+    pid_t pid = fork();
+    if (pid < 0) {
+        cerr << "fork err" << endl;
+    } else if (pid == 0) {
+        link_pipe_read(prev_pipe);
+        close(prev_pipe[0]);
+        close(prev_pipe[1]);
+        
+        ofstream my_file(filename);
+        string buffer;
+        while (getline(cin, buffer)) {
+            my_file << buffer << endl;
+        }
+        my_file.close();
+        exit(0);
+    }
 
-//     return pid;
-// }
+    return pid;
+}

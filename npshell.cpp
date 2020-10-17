@@ -16,7 +16,7 @@ using namespace std;
 
 int main() {
     string input;
-    setenv("PATH", "./bin", 1);
+    setenv("PATH", "bin:.", 1);
     vector<map<string, int>> num_pipe_info;
 
     while(1) {
@@ -47,7 +47,7 @@ int main() {
                 }else {
                     cerr << "missing arguments" << endl;
                 }
-            } else if (token == "|" || token == "!" || token == ">") {
+            }  else if (token == "|" || token == "!" || token == ">") {
                 collect_zombie(pid_table);
                 map<string, int> child_info = run_cmd(cmd, token, prev_pipe, false);
                 pid_table.push_back(child_info.find("pid")->second);
@@ -58,6 +58,15 @@ int main() {
                 prev_pipe[0] = child_info.find("read")->second;
                 prev_pipe[1] = child_info.find("write")->second;
                 cmd.clear();
+
+                if (token == ">") {
+                    string filename;
+                    if (ss >> filename) {
+                        pid_t c_pid = output(filename, prev_pipe); // will clean prev pipe below
+                        pid_table.push_back(c_pid);
+                    }
+                }
+
                 // insert counter
 
             } else if (token == "exit") {
