@@ -83,7 +83,7 @@ int main() {
             cmd.pop_back();
         }
         
-        map<string, int> child_info = run_cmd(cmd, "\0", prev_pipe, !is_num_pipe, num_pipe_list); // num pipe is not the last
+        map<string, int> child_info = run_cmd(cmd, token.substr(0, 1), prev_pipe, !is_num_pipe, num_pipe_list); // num pipe is not the last
 
         if (is_num_pipe) {    
             child_info.insert(pair<string, int>("counter", pipe_counter));
