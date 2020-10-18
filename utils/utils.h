@@ -16,7 +16,14 @@ using namespace std;
 void link_pipe_read(int[2]);
 void link_pipe_write(int[2], bool);
 
-map<string, int> run_cmd(vector<char*> &, string , int[2], bool);
+
 pid_t output(string, int[2]);
+
+void decrease_num_pipe(vector<map<string, int>> &);
+void erase_num_pipe(vector<map<string, int>> &);
+
+int get_pipe_counter(string);
+int pipe_worker(vector<map<string, int>> &);
+void replace_fd(int, int);
 
 #endif

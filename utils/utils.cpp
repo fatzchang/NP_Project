@@ -7,6 +7,7 @@
 #include <fstream>
 #include <cstring>
 #include <map>
+#include <sys/wait.h>
 
 
 // pipe utils
@@ -26,48 +27,6 @@ void link_pipe_write(int pipefd[2], bool pipe_err) {
         dup(pipefd[1]);
     }
 }
-
-// return pipe read end
-map<string, int> run_cmd(vector<char*> &cmd, string token, int prev_pipe[2], bool is_last) {
-    bool is_first = prev_pipe[0] < 0; // initial value is -1
-    bool is_only = is_first && is_last;
-    int pipefd[2];
-
-    if (!is_only && !is_last) {
-        pipe(pipefd);
-    }
-
-    cmd.push_back(NULL);
-
-    pid_t pid = fork();
-
-    if (pid == 0) {
-        if (!is_only && !is_first) {
-            link_pipe_read(prev_pipe);
-        }
-        if (!is_last) {
-            link_pipe_write(pipefd, token == "!");
-        }
-
-        // child close previous pipefd
-        close(prev_pipe[0]);
-        close(prev_pipe[1]);
-
-        execvp(cmd[0], &cmd[0]);
-
-        cerr << "Unknown Command: [" << cmd[0] << "]" << endl;
-        exit(0);
-    } else {
-        map<string, int> m;
-
-        m.insert(pair<string, int>("read", pipefd[0]));
-        m.insert(pair<string, int>("write", pipefd[1]));
-        m.insert(pair<string, int>("pid", pid));
-
-        return m;
-    }
-}
-
 
 pid_t output(
     string filename,
@@ -91,4 +50,86 @@ pid_t output(
     }
 
     return pid;
+}
+
+
+
+void decrease_num_pipe(vector<map<string, int>> &num_pipe_list) {
+    for (size_t i = 0; i < num_pipe_list.size(); i++) {
+        map<string, int>::iterator it = num_pipe_list.at(i).find("counter");
+        (it->second)--;
+    }
+}
+
+void erase_num_pipe(vector<map<string, int>> &num_pipe_list) {
+    for (size_t i = 0; i < num_pipe_list.size(); i++) {
+        map<string, int>::iterator it = num_pipe_list.at(i).find("counter");
+        if (it->second == 0) {
+            // close pipe both end
+            close(num_pipe_list.at(i).find("read")->second);
+            close(num_pipe_list.at(i).find("write")->second);
+            num_pipe_list.erase(num_pipe_list.begin() + i);
+            i--;
+        }
+    }
+}
+
+
+int get_pipe_counter(string token) {
+    int pipe_counter = 0;
+
+    try {
+        pipe_counter = stoi(token.substr(1));
+    } catch(const exception &e) {
+        pipe_counter = -1;
+    }
+
+    return pipe_counter;
+}
+
+
+int pipe_worker(vector<map<string, int>> &num_pipe_list) {
+    int pipefd[2];
+    pipe(pipefd);
+    // FIXIT: 有可能沒有輪到pipe, e.g cat但是當下沒有0的num pipe
+
+    pid_t pid = fork();
+    if (pid == 0) {
+        replace_fd(STDIN_FILENO, pipefd[1]);
+        close(pipefd[0]);
+        
+        int stdin_tmp = dup(STDIN_FILENO);
+        for (size_t i = 0; i < num_pipe_list.size(); i++) {
+            if (num_pipe_list.at(i).find("counter")->second == 0) {
+                cout << i << endl; // TODO: delete this line
+                int readfd = num_pipe_list.at(i).find("read")->second;
+                int writefd = num_pipe_list.at(i).find("write")->second;
+                
+                string input;
+                replace_fd(STDIN_FILENO, readfd);
+                close(writefd);
+                cout << readfd << endl;
+                while (getline(cin, input)) {
+                    cout << input << endl;
+                }
+                cout << "GGG" << endl;
+            }
+        }
+        replace_fd(STDIN_FILENO, stdin_tmp);
+        erase_num_pipe(num_pipe_list);
+        exit(0);
+    } else {
+        erase_num_pipe(num_pipe_list); // erase then wait
+        waitpid(pid, NULL, 0); //FIXIT
+        close(pipefd[1]);
+        
+        // keep pipe read end
+        return pipefd[0];
+    }
+}
+
+void replace_fd(int ori, int targ) {
+    close(ori);
+    dup(targ);
+    close(targ);
 }
