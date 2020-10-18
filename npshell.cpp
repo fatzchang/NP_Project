@@ -63,9 +63,9 @@ int main() {
                 if (token == ">") {
                     string filename;
                     if (ss >> filename) {
-                        waitpid(child_info.find("pid")->second, NULL, 0);
-                        pid_t c_pid = output(filename, prev_pipe);
-                        waitpid(c_pid, NULL, 0);
+                        // waitpid(child_info.find("pid")->second, NULL, 0);
+                        output(filename, prev_pipe);
+                        // waitpid(c_pid, NULL, 0);
                         // pid_table.push_back(c_pid);
                     }
                 }else {
@@ -80,8 +80,9 @@ int main() {
             }
         }
         collect_zombie(pid_table);
-
+        // cout << token << endl;
         if (token != ">") {
+            // cout << "im here" << endl;
             // conver |number to int
             int pipe_counter = get_pipe_counter(token);
             bool is_num_pipe = (pipe_counter > 0) && (token.substr(0, 1) == "|" || token.substr(0, 1) == "!");
