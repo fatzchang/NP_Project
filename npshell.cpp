@@ -1,6 +1,7 @@
 #include "npshell.h"
 #include "./utils/utils.h"
 #include "./utils/process.h"
+#include "./utils/run.h"
 
 #include <string>
 #include <sstream>
@@ -17,7 +18,7 @@ using namespace std;
 int main() {
     string input;
     setenv("PATH", "bin:.", 1);
-    vector<map<string, int>> num_pipe_info;
+    vector<map<string, int>> num_pipe_list;
 
     while(1) {
         cout << "% ";
@@ -28,6 +29,8 @@ int main() {
         vector<pid_t> pid_table;
         int prev_pipe[2] = {-1, -1};
         
+        decrease_num_pipe(num_pipe_list);
+
         while(ss >> token) {
             char *t = (char *)malloc(sizeof(char)*(token.size()+1));
             memset(t, 0, sizeof(char) * (token.size()+1));
@@ -50,11 +53,8 @@ int main() {
                 }
             }  else if (token == "|" || token == "!" || token == ">") {
                 collect_zombie(pid_table);
-                map<string, int> child_info = run_cmd(cmd, token, prev_pipe, false);
+                map<string, int> child_info = run_cmd(cmd, token, prev_pipe, false, num_pipe_list);
                 pid_table.push_back(child_info.find("pid")->second);
-                // close previous pipe
-                close(prev_pipe[0]);
-                close(prev_pipe[1]);
                 // save recent pipe
                 prev_pipe[0] = child_info.find("read")->second;
                 prev_pipe[1] = child_info.find("write")->second;
@@ -67,9 +67,6 @@ int main() {
                         pid_table.push_back(c_pid);
                     }
                 }
-
-                // insert counter
-
             } else if (token == "exit") {
                 return 0;
             } else  {
@@ -78,15 +75,27 @@ int main() {
         }
 
         collect_zombie(pid_table);
-        map<string, int> child_info = run_cmd(cmd, "\0", prev_pipe, true);
-        // if |number, push child_info to list
-        close(prev_pipe[0]);
-        close(prev_pipe[1]);
+        // conver |number to int
+        int pipe_counter = get_pipe_counter(token);
+        bool is_num_pipe = (pipe_counter > 0) && (token.substr(0, 1) == "|" || token.substr(0, 1) == "!");
+
+        if (is_num_pipe) {
+            cmd.pop_back();
+        }
+        
+        map<string, int> child_info = run_cmd(cmd, "\0", prev_pipe, !is_num_pipe, num_pipe_list); // num pipe is not the last
+
+        if (is_num_pipe) {    
+            child_info.insert(pair<string, int>("counter", pipe_counter));
+            num_pipe_list.push_back(child_info);
+        }
+
+        waitpid(child_info.find("pid")->second, NULL, 0);
+
         // reset prev_pipe
         prev_pipe[0] = -1;
         prev_pipe[1] = -1;
         cmd.clear();
-        waitpid(child_info.find("pid")->second, NULL, 0);
 
         // TODO: free malloc, combine with cmd.clear
     }
