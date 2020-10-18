@@ -95,27 +95,23 @@ int pipe_worker(vector<map<string, int>> &num_pipe_list) {
 
     pid_t pid = fork();
     if (pid == 0) {
-        replace_fd(STDIN_FILENO, pipefd[1]);
-        close(pipefd[0]);
+        replace_fd(STDOUT_FILENO, pipefd[1]);
         
-        int stdin_tmp = dup(STDIN_FILENO);
         for (size_t i = 0; i < num_pipe_list.size(); i++) {
             if (num_pipe_list.at(i).find("counter")->second == 0) {
-                cout << i << endl; // TODO: delete this line
                 int readfd = num_pipe_list.at(i).find("read")->second;
                 int writefd = num_pipe_list.at(i).find("write")->second;
                 
                 string input;
                 replace_fd(STDIN_FILENO, readfd);
                 close(writefd);
-                cout << readfd << endl;
                 while (getline(cin, input)) {
                     cout << input << endl;
                 }
-                cout << "GGG" << endl;
+                cin.clear();
             }
         }
-        replace_fd(STDIN_FILENO, stdin_tmp);
+
         erase_num_pipe(num_pipe_list);
         exit(0);
     } else {

@@ -44,9 +44,7 @@ map<string, int> run_cmd(
         // deal with num pipe
         if (is_first) {
             int readfd = pipe_worker(num_pipe_list);
-            close(STDIN_FILENO);
-            dup(readfd);
-            close(readfd);
+            replace_fd(STDIN_FILENO, readfd);
         }
         
         execvp(cmd[0], &cmd[0]);
