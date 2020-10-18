@@ -61,10 +61,10 @@ int main() {
                 prev_pipe[1] = child_info.find("write")->second;
                 
                 if (token == ">") {
-                    waitpid(child_info.find("pid")->second, NULL, 0);
                     string filename;
                     if (ss >> filename) {
-                        pid_t c_pid = output(filename, prev_pipe); // will clean prev pipe below
+                        waitpid(child_info.find("pid")->second, NULL, 0);
+                        pid_t c_pid = output(filename, prev_pipe);
                         waitpid(c_pid, NULL, 0);
                         // pid_table.push_back(c_pid);
                     }
@@ -79,24 +79,27 @@ int main() {
                 cmd.push_back(t); 
             }
         }
-
         collect_zombie(pid_table);
-        // conver |number to int
-        int pipe_counter = get_pipe_counter(token);
-        bool is_num_pipe = (pipe_counter > 0) && (token.substr(0, 1) == "|" || token.substr(0, 1) == "!");
 
-        if (is_num_pipe) {
-            cmd.pop_back();
+        if (token != ">") {
+            // conver |number to int
+            int pipe_counter = get_pipe_counter(token);
+            bool is_num_pipe = (pipe_counter > 0) && (token.substr(0, 1) == "|" || token.substr(0, 1) == "!");
+
+            if (is_num_pipe) {
+                cmd.pop_back();
+            }
+            
+            map<string, int> child_info = run_cmd(cmd, token.substr(0, 1), prev_pipe, !is_num_pipe, num_pipe_list); // num pipe is not the last
+
+            if (is_num_pipe) {    
+                child_info.insert(pair<string, int>("counter", pipe_counter));
+                num_pipe_list.push_back(child_info);
+            }
+
+            waitpid(child_info.find("pid")->second, NULL, 0);
         }
         
-        map<string, int> child_info = run_cmd(cmd, token.substr(0, 1), prev_pipe, !is_num_pipe, num_pipe_list); // num pipe is not the last
-
-        if (is_num_pipe) {    
-            child_info.insert(pair<string, int>("counter", pipe_counter));
-            num_pipe_list.push_back(child_info);
-        }
-
-        waitpid(child_info.find("pid")->second, NULL, 0);
 
         // reset prev_pipe
         prev_pipe[0] = -1;
