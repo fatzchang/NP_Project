@@ -15,6 +15,7 @@
 void link_pipe_read(int pipefd[2]) {
    close(STDIN_FILENO);
    dup(pipefd[0]);
+   close(pipefd[0]);
 }
 
 // stdout -> pipe's write end
@@ -26,6 +27,8 @@ void link_pipe_write(int pipefd[2], bool pipe_err) {
         close(STDERR_FILENO);
         dup(pipefd[1]);
     }
+
+    close(pipefd[1]);
 }
 
 pid_t output(
@@ -48,6 +51,9 @@ pid_t output(
         my_file.close();
         exit(0);
     }
+
+    close(prev_pipe[0]);
+    close(prev_pipe[1]);
 
     return pid;
 }

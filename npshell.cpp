@@ -65,7 +65,8 @@ int main() {
                     string filename;
                     if (ss >> filename) {
                         pid_t c_pid = output(filename, prev_pipe); // will clean prev pipe below
-                        pid_table.push_back(c_pid);
+                        waitpid(c_pid, NULL, 0);
+                        // pid_table.push_back(c_pid);
                     }
                 }
             } else if (token == "exit") {
