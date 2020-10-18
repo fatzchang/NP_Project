@@ -42,7 +42,7 @@ map<string, int> run_cmd(
         close(prev_pipe[1]);
 
         // deal with num pipe
-        if (is_first) {
+        if (is_first && pipe_exist(num_pipe_list)) {
             int readfd = pipe_worker(num_pipe_list);
             replace_fd(STDIN_FILENO, readfd);
         }

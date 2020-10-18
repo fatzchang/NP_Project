@@ -129,3 +129,16 @@ void replace_fd(int ori, int targ) {
     dup(targ);
     close(targ);
 }
+
+bool pipe_exist(vector<map<string, int>> &num_pipe_list) {
+    bool exist = false;
+    for (size_t i = 0; i < num_pipe_list.size(); i++)
+    {
+        if (num_pipe_list.at(i).find("counter")->second == 0) {
+            exist = true;
+            break;
+        }
+    }
+
+    return exist;
+}

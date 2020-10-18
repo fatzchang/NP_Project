@@ -16,6 +16,7 @@
 using namespace std;
 
 int main() {
+    signal(SIGCHLD, psignal_handler);
     string input;
     setenv("PATH", "bin:.", 1);
     vector<map<string, int>> num_pipe_list;

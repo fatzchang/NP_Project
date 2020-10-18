@@ -25,5 +25,6 @@ void erase_num_pipe(vector<map<string, int>> &);
 int get_pipe_counter(string);
 int pipe_worker(vector<map<string, int>> &);
 void replace_fd(int, int);
+bool pipe_exist(vector<map<string, int>> &);
 
 #endif
