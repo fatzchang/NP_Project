@@ -40,7 +40,6 @@ pid_t output(
         cerr << "fork err" << endl;
     } else if (pid == 0) {
         link_pipe_read(prev_pipe);
-        close(prev_pipe[0]);
         close(prev_pipe[1]);
         
         ofstream my_file(filename);

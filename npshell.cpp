@@ -55,20 +55,24 @@ int main() {
             }  else if (token == "|" || token == "!" || token == ">") {
                 collect_zombie(pid_table);
                 map<string, int> child_info = run_cmd(cmd, token, prev_pipe, false, num_pipe_list);
-                pid_table.push_back(child_info.find("pid")->second);
+                
                 // save recent pipe
                 prev_pipe[0] = child_info.find("read")->second;
                 prev_pipe[1] = child_info.find("write")->second;
-                cmd.clear();
-
+                
                 if (token == ">") {
+                    waitpid(child_info.find("pid")->second, NULL, 0);
                     string filename;
                     if (ss >> filename) {
                         pid_t c_pid = output(filename, prev_pipe); // will clean prev pipe below
                         waitpid(c_pid, NULL, 0);
                         // pid_table.push_back(c_pid);
                     }
+                }else {
+                    pid_table.push_back(child_info.find("pid")->second);
                 }
+
+                cmd.clear();
             } else if (token == "exit") {
                 return 0;
             } else  {
