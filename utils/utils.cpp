@@ -36,12 +36,11 @@ void output(
     int prev_pipe_read
 ) {
     ofstream my_file(filename);
-    char buf[1024];
-    memset(buf, '\0', 1024);
-    read(prev_pipe_read, buf, 1023);
-    // while(read(prev_pipe_read, buf, 1023) > 0) {
-        my_file << buf << flush;
-    // };
+    char buf[6];
+    memset(buf, '\0', 6);
+    while(read(prev_pipe_read, buf, 5) > 0) {
+        my_file << buf;
+    }
     my_file.close();
     
 }
@@ -90,11 +89,11 @@ int pipe_worker(vector<map<string, int>> &num_pipe_list) {
     
     for (size_t i = 0; i < num_pipe_list.size(); i++) {
         if (num_pipe_list.at(i).find("counter")->second == 0) {
-            char buf[1024];
-            memset(buf, '\0', 1024);
-            read(num_pipe_list.at(i).find("read")->second, buf, 1023);
-            write(pipefd[1], buf, 1024);
-            // cout << buf;
+            char buf[6];
+            memset(buf, '\0', 6);
+            while (read(num_pipe_list.at(i).find("read")->second, buf, 5) > 0) {
+                write(pipefd[1], buf, 5);
+            }
         }
     }
     close(pipefd[1]);
