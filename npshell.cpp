@@ -30,7 +30,9 @@ int main() {
         vector<pid_t> pid_table;
         int prev_pipe[2] = {-1, -1};
         
-        decrease_num_pipe(num_pipe_list);
+        if (input.length() != 0) {
+            decrease_num_pipe(num_pipe_list);
+        }
 
         while(ss >> token) {
             char *t = (char *)malloc(sizeof(char)*(token.size()+1));
@@ -47,8 +49,10 @@ int main() {
             } else if (token == "printenv") {
                 string env;
                 if (ss >> env) {
-                    cout << getenv(env.c_str()) << endl;
-                    // TODO: skip if no env data
+                    char *env_value = getenv(env.c_str());
+                    if (env_value != NULL) {
+                        cout << env_value << endl;
+                    }
                 }else {
                     cerr << "missing arguments" << endl;
                 }
@@ -80,26 +84,23 @@ int main() {
             }
         }
         collect_zombie(pid_table);
-        // cout << token << endl;
-        if (token != ">") {
-            // cout << "im here" << endl;
-            // conver |number to int
-            int pipe_counter = get_pipe_counter(token);
-            bool is_num_pipe = (pipe_counter > 0) && (token.substr(0, 1) == "|" || token.substr(0, 1) == "!");
+        // conver |number to int
+        int pipe_counter = get_pipe_counter(token);
+        bool is_num_pipe = (pipe_counter > 0) && (token.substr(0, 1) == "|" || token.substr(0, 1) == "!");
 
-            if (is_num_pipe) {
-                cmd.pop_back();
-            }
-            
-            map<string, int> child_info = run_cmd(cmd, token.substr(0, 1), prev_pipe, !is_num_pipe, num_pipe_list); // num pipe is not the last
-
-            if (is_num_pipe) {    
-                child_info.insert(pair<string, int>("counter", pipe_counter));
-                num_pipe_list.push_back(child_info);
-            }
-
-            waitpid(child_info.find("pid")->second, NULL, 0);
+        if (is_num_pipe) {
+            cmd.pop_back();
         }
+        
+        map<string, int> child_info = run_cmd(cmd, token.substr(0, 1), prev_pipe, !is_num_pipe, num_pipe_list); // num pipe is not the last
+
+        if (is_num_pipe) {    
+            child_info.insert(pair<string, int>("counter", pipe_counter));
+            num_pipe_list.push_back(child_info);
+        }
+
+        waitpid(child_info.find("pid")->second, NULL, 0);
+
         
 
         // reset prev_pipe
