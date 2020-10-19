@@ -39,13 +39,17 @@ pid_t output(
     if (pid < 0) {
         cerr << "fork err" << endl;
     } else if (pid == 0) {
-        replace_fd(STDIN_FILENO, prev_pipe_read);
+        // replace_fd(STDIN_FILENO, prev_pipe_read);
         
         ofstream my_file(filename);
-        string buffer;
-        while (getline(cin, buffer)) {
-            my_file << buffer << endl;
-        }
+        // string buffer;
+        char buf[100];
+        while(read(prev_pipe_read, buf, 100) > 0) {
+            my_file << buf << endl;
+        };
+        // while (getline(cin, buffer)) {
+        //     my_file << buffer << endl;
+        // }
         my_file.close();
         exit(0);
     }
@@ -93,8 +97,6 @@ int pipe_worker(vector<map<string, int>> &num_pipe_list) {
     int pipefd[2];
     pipe(pipefd);
 
-    
-    
 
     int stdout_tmp = dup(STDOUT_FILENO);
     replace_fd(STDOUT_FILENO, pipefd[1]);
@@ -102,7 +104,7 @@ int pipe_worker(vector<map<string, int>> &num_pipe_list) {
     for (size_t i = 0; i < num_pipe_list.size(); i++) {
         if (num_pipe_list.at(i).find("counter")->second == 0) {
             char buf[100];
-            while(read(num_pipe_list.at(0).find("read")->second, buf, 100) > 0) {
+            while(read(num_pipe_list.at(i).find("read")->second, buf, 100) > 0) {
                 cout << buf << endl;
             };
             // cerr << "pipe:" << "\n" << buf << endl;

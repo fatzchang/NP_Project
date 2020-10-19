@@ -23,7 +23,7 @@ int main() {
     vector<map<string, int>> num_pipe_list;
 
     while(1) {
-        cout << "% " << flush;
+        cout << "% ";
         getline(cin, input);
         stringstream ss(input);
         string token;
