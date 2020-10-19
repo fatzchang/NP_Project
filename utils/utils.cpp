@@ -85,33 +85,22 @@ int get_pipe_counter(string token) {
 int pipe_worker(vector<map<string, int>> &num_pipe_list) {
     int pipefd[2];
     pipe(pipefd);
-
+    
 
     int stdout_tmp = dup(STDOUT_FILENO);
     replace_fd(STDOUT_FILENO, pipefd[1]);
     
     for (size_t i = 0; i < num_pipe_list.size(); i++) {
         if (num_pipe_list.at(i).find("counter")->second == 0) {
-            char buf[100];
-            while(read(num_pipe_list.at(i).find("read")->second, buf, 100) > 0) {
-                cout << buf << endl;
-            };
-            // cerr << "pipe:" << "\n" << buf << endl;
-            // cerr << "------" << endl;
-
-            // int readfd = num_pipe_list.at(i).find("read")->second;
-            // string input;
-            // replace_fd(STDIN_FILENO, readfd);
-            // cin.sync();
-            // // cerr << readfd << endl;
-            // cout << i << endl;
-            // while (getline(cin, input)) {
-            //     cout << input << endl;
-            //     // cout << "@@@" << endl;
-            // }
-            // cin.clear();
+            char buf[1024];
+            memset(buf, '\0', 1024);
+            read(num_pipe_list.at(i).find("read")->second, buf, 1023);
+            cout << buf << flush;
         }
     }
+
+
+
     erase_num_pipe(num_pipe_list);
     replace_fd(STDOUT_FILENO, stdout_tmp);
 
