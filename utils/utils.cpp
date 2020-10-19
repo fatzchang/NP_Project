@@ -36,13 +36,11 @@ void output(
     int prev_pipe_read
 ) {
     ofstream my_file(filename);
-    char buf[6];
-    memset(buf, '\0', 6);
-    while(read(prev_pipe_read, buf, 5) > 0) {
-        my_file << buf;
-    }
+    char buf[1024];
+    memset(buf, '\0', 1024);
+    read(prev_pipe_read, buf, 1024);
+    my_file << buf;
     my_file.close();
-    
 }
 
 
@@ -84,23 +82,20 @@ int get_pipe_counter(string token) {
 int pipe_worker(vector<map<string, int>> &num_pipe_list) {
     int pipefd[2];
     pipe(pipefd);
-    // int stdout_tmp = dup(STDOUT_FILENO);
-    // replace_fd(STDOUT_FILENO, pipefd[1]);
-    
+    int stdout_tmp = dup(STDOUT_FILENO);
+    replace_fd(STDOUT_FILENO, pipefd[1]);
     for (size_t i = 0; i < num_pipe_list.size(); i++) {
         if (num_pipe_list.at(i).find("counter")->second == 0) {
-            char buf[6];
-            memset(buf, '\0', 6);
-            while (read(num_pipe_list.at(i).find("read")->second, buf, 5) > 0) {
-                write(pipefd[1], buf, 5);
-            }
+            char buf[1024];
+            memset(buf, '\0', 1024);
+            read(num_pipe_list.at(i).find("read")->second, buf, 1024);
+            cout << buf;
+            // write(pipefd[1], buf, 1024);
         }
     }
-    close(pipefd[1]);
-
-    // cout << endl;
+    replace_fd(STDOUT_FILENO, stdout_tmp);
+    // close(pipefd[1]);
     erase_num_pipe(num_pipe_list);
-    // replace_fd(STDOUT_FILENO, stdout_tmp);
 
     return pipefd[0];
 }

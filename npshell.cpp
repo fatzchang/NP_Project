@@ -66,6 +66,7 @@ int main() {
                 prev_pipe[1] = child_info.find("write")->second;
                 
                 if (token == ">") {
+                    waitpid(child_info.find("pid")->second, NULL, 0);
                     string filename;
                     if (ss >> filename) {
                         output(filename, prev_pipe[0]);
