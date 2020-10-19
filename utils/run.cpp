@@ -54,13 +54,14 @@ map<string, int> run_cmd(
     } else {
         close(prev_pipe[0]);
         close(prev_pipe[1]);
+        close(pipefd[1]);
         
         erase_num_pipe(num_pipe_list);
 
         map<string, int> m;
 
         m.insert(pair<string, int>("read", pipefd[0]));
-        m.insert(pair<string, int>("write", pipefd[1]));
+        // m.insert(pair<string, int>("write", pipefd[1]));
         m.insert(pair<string, int>("pid", pid));
 
         

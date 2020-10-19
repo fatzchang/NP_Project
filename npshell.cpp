@@ -18,11 +18,12 @@ using namespace std;
 int main() {
     signal(SIGCHLD, psignal_handler);
     string input;
+    
     setenv("PATH", "bin:.", 1);
     vector<map<string, int>> num_pipe_list;
 
     while(1) {
-        cout << "% ";
+        cout << "% " << flush;
         getline(cin, input);
         stringstream ss(input);
         string token;
@@ -67,10 +68,8 @@ int main() {
                 if (token == ">") {
                     string filename;
                     if (ss >> filename) {
-                        // waitpid(child_info.find("pid")->second, NULL, 0);
-                        output(filename, prev_pipe);
-                        // waitpid(c_pid, NULL, 0);
-                        // pid_table.push_back(c_pid);
+                        pid_t c_pid = output(filename, prev_pipe);
+                        pid_table.push_back(c_pid);
                     }
                 }else {
                     pid_table.push_back(child_info.find("pid")->second);
@@ -92,16 +91,20 @@ int main() {
             cmd.pop_back();
         }
         
-        map<string, int> child_info = run_cmd(cmd, token.substr(0, 1), prev_pipe, !is_num_pipe, num_pipe_list); // num pipe is not the last
+        map<string, int> child_info = run_cmd(
+            cmd, 
+            token.substr(0, 1), 
+            prev_pipe, 
+            !is_num_pipe, 
+            num_pipe_list
+        ); // num pipe is not the last
 
         if (is_num_pipe) {    
             child_info.insert(pair<string, int>("counter", pipe_counter));
             num_pipe_list.push_back(child_info);
         }
-
+   
         waitpid(child_info.find("pid")->second, NULL, 0);
-
-        
 
         // reset prev_pipe
         prev_pipe[0] = -1;
