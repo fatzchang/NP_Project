@@ -85,24 +85,23 @@ int get_pipe_counter(string token) {
 int pipe_worker(vector<map<string, int>> &num_pipe_list) {
     int pipefd[2];
     pipe(pipefd);
-    
-
-    int stdout_tmp = dup(STDOUT_FILENO);
-    replace_fd(STDOUT_FILENO, pipefd[1]);
+    // int stdout_tmp = dup(STDOUT_FILENO);
+    // replace_fd(STDOUT_FILENO, pipefd[1]);
     
     for (size_t i = 0; i < num_pipe_list.size(); i++) {
         if (num_pipe_list.at(i).find("counter")->second == 0) {
             char buf[1024];
             memset(buf, '\0', 1024);
             read(num_pipe_list.at(i).find("read")->second, buf, 1023);
-            cout << buf << flush;
+            write(pipefd[1], buf, 1024);
+            // cout << buf;
         }
     }
+    close(pipefd[1]);
 
-
-
+    // cout << endl;
     erase_num_pipe(num_pipe_list);
-    replace_fd(STDOUT_FILENO, stdout_tmp);
+    // replace_fd(STDOUT_FILENO, stdout_tmp);
 
     return pipefd[0];
 }
