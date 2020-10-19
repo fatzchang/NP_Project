@@ -17,7 +17,7 @@ void link_pipe_read(int[2]);
 void link_pipe_write(int[2], bool);
 
 
-pid_t output(string, int[2]);
+pid_t output(string, int);
 
 void decrease_num_pipe(vector<map<string, int>> &);
 void erase_num_pipe(vector<map<string, int>> &);

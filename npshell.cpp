@@ -68,7 +68,7 @@ int main() {
                 if (token == ">") {
                     string filename;
                     if (ss >> filename) {
-                        pid_t c_pid = output(filename, prev_pipe);
+                        pid_t c_pid = output(filename, prev_pipe[0]);
                         pid_table.push_back(c_pid);
                     }
                 }else {

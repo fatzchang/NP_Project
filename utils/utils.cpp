@@ -33,14 +33,13 @@ void link_pipe_write(int pipefd[2], bool pipe_err) {
 
 pid_t output(
     string filename,
-    int prev_pipe[2]
+    int prev_pipe_read
 ) {
     pid_t pid = fork();
     if (pid < 0) {
         cerr << "fork err" << endl;
     } else if (pid == 0) {
-        link_pipe_read(prev_pipe);
-        close(prev_pipe[1]);
+        replace_fd(STDIN_FILENO, prev_pipe_read);
         
         ofstream my_file(filename);
         string buffer;
@@ -50,9 +49,6 @@ pid_t output(
         my_file.close();
         exit(0);
     }
-
-    close(prev_pipe[0]);
-    close(prev_pipe[1]);
 
     return pid;
 }
@@ -96,37 +92,39 @@ int get_pipe_counter(string token) {
 int pipe_worker(vector<map<string, int>> &num_pipe_list) {
     int pipefd[2];
     pipe(pipefd);
-    // FIXIT: 有可能沒有輪到pipe, e.g cat但是當下沒有0的num pipe
 
-    pid_t pid = fork();
-    if (pid == 0) {
-        replace_fd(STDOUT_FILENO, pipefd[1]);
-        
-        for (size_t i = 0; i < num_pipe_list.size(); i++) {
-            if (num_pipe_list.at(i).find("counter")->second == 0) {
-                int readfd = num_pipe_list.at(i).find("read")->second;
-                int writefd = num_pipe_list.at(i).find("write")->second;
-                
-                string input;
-                replace_fd(STDIN_FILENO, readfd);
-                close(writefd);
-                while (getline(cin, input)) {
-                    cout << input << endl;
-                }
-                cin.clear();
-            }
+    
+    
+
+    int stdout_tmp = dup(STDOUT_FILENO);
+    replace_fd(STDOUT_FILENO, pipefd[1]);
+    
+    for (size_t i = 0; i < num_pipe_list.size(); i++) {
+        if (num_pipe_list.at(i).find("counter")->second == 0) {
+            char buf[100];
+            while(read(num_pipe_list.at(0).find("read")->second, buf, 100) > 0) {
+                cout << buf << endl;
+            };
+            // cerr << "pipe:" << "\n" << buf << endl;
+            // cerr << "------" << endl;
+
+            // int readfd = num_pipe_list.at(i).find("read")->second;
+            // string input;
+            // replace_fd(STDIN_FILENO, readfd);
+            // cin.sync();
+            // // cerr << readfd << endl;
+            // cout << i << endl;
+            // while (getline(cin, input)) {
+            //     cout << input << endl;
+            //     // cout << "@@@" << endl;
+            // }
+            // cin.clear();
         }
-
-        erase_num_pipe(num_pipe_list);
-        exit(0);
-    } else {
-        erase_num_pipe(num_pipe_list); // erase then wait
-        waitpid(pid, NULL, 0); //FIXIT
-        close(pipefd[1]);
-        
-        // keep pipe read end
-        return pipefd[0];
     }
+    erase_num_pipe(num_pipe_list);
+    replace_fd(STDOUT_FILENO, stdout_tmp);
+
+    return pipefd[0];
 }
 
 void replace_fd(int ori, int targ) {
