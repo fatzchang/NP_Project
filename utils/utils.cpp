@@ -31,30 +31,19 @@ void link_pipe_write(int pipefd[2], bool pipe_err) {
     close(pipefd[1]);
 }
 
-pid_t output(
+void output(
     string filename,
     int prev_pipe_read
 ) {
-    pid_t pid = fork();
-    if (pid < 0) {
-        cerr << "fork err" << endl;
-    } else if (pid == 0) {
-        // replace_fd(STDIN_FILENO, prev_pipe_read);
-        
-        ofstream my_file(filename);
-        // string buffer;
-        char buf[100];
-        while(read(prev_pipe_read, buf, 100) > 0) {
-            my_file << buf << endl;
-        };
-        // while (getline(cin, buffer)) {
-        //     my_file << buffer << endl;
-        // }
-        my_file.close();
-        exit(0);
-    }
-
-    return pid;
+    ofstream my_file(filename);
+    char buf[1024];
+    memset(buf, '\0', 1024);
+    read(prev_pipe_read, buf, 1023);
+    // while(read(prev_pipe_read, buf, 1023) > 0) {
+        my_file << buf << flush;
+    // };
+    my_file.close();
+    
 }
 
 
