@@ -23,7 +23,7 @@ int main() {
 
     while(1) {
         string input;
-        cout << "% " << flush;
+        cout << "% ";
         getline(cin, input);
         stringstream ss(input);
         string token;
