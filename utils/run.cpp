@@ -27,8 +27,8 @@ map<string, int> run_cmd(
 
     cmd.push_back(NULL);
 
-    pid_t pid = fork();
-    while (pid < 0) {
+    pid_t pid;
+    while ((pid = fork()) < 0) {
         usleep(1000);
     }
 
