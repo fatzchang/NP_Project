@@ -18,7 +18,7 @@ map<string, int> run_cmd(
 {
     bool is_first = prev_pipe[0] < 0; // initial value is -1
     bool is_only = is_first && is_last;
-    int pipefd[2];
+    int pipefd[2] = {-1, -1};
 
 
     if (!is_only && !is_last) {

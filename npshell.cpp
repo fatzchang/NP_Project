@@ -16,13 +16,13 @@
 using namespace std;
 
 int main() {
-    string input;
     signal(SIGCHLD, psignal_handler);
     setenv("PATH", "bin:.", 1);
     vector<map<string, int>> num_pipe_list;
     vector<pid_t> pid_table;
 
     while(1) {
+        string input;
         cout << "% " << flush;
         getline(cin, input);
         stringstream ss(input);
@@ -106,9 +106,6 @@ int main() {
    
         waitpid(child_info.find("pid")->second, NULL, 0);
 
-        // reset prev_pipe
-        prev_pipe[0] = -1;
-        prev_pipe[1] = -1;
         cmd.clear();
 
         // TODO: free malloc, combine with cmd.clear
