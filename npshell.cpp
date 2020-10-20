@@ -16,11 +16,12 @@
 using namespace std;
 
 int main() {
-    signal(SIGCHLD, psignal_handler);
+    // signal(SIGCHLD, psignal_handler);
     string input;
     
     setenv("PATH", "bin:.", 1);
     vector<map<string, int>> num_pipe_list;
+    vector<pid_t> pid_table;
 
     while(1) {
         cout << "% ";
@@ -28,7 +29,6 @@ int main() {
         stringstream ss(input);
         string token;
         vector<char*> cmd;
-        vector<pid_t> pid_table;
         int prev_pipe[2] = {-1, -1};
         
         if (input.length() != 0) {

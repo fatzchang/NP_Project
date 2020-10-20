@@ -36,9 +36,9 @@ void output(
     int prev_pipe_read
 ) {
     ofstream my_file(filename);
-    char buf[1024];
-    memset(buf, '\0', 1024);
-    read(prev_pipe_read, buf, 1024);
+    char buf[BUF_SIZE + 1];
+    memset(buf, '\0', BUF_SIZE + 1);
+    read(prev_pipe_read, buf, BUF_SIZE);
     my_file << buf;
     my_file.close();
 }
@@ -86,17 +86,14 @@ int pipe_worker(vector<map<string, int>> &num_pipe_list) {
     replace_fd(STDOUT_FILENO, pipefd[1]);
     for (size_t i = 0; i < num_pipe_list.size(); i++) {
         if (num_pipe_list.at(i).find("counter")->second == 0) {
-            char buf[1024];
-            memset(buf, '\0', 1024);
-            read(num_pipe_list.at(i).find("read")->second, buf, 1024);
+            char buf[BUF_SIZE + 1];
+            memset(buf, '\0', BUF_SIZE + 1);
+            read(num_pipe_list.at(i).find("read")->second, buf, BUF_SIZE);
             cout << buf;
-            // write(pipefd[1], buf, 1024);
         }
     }
     replace_fd(STDOUT_FILENO, stdout_tmp);
-    // close(pipefd[1]);
     erase_num_pipe(num_pipe_list);
-
     return pipefd[0];
 }
 

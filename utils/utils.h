@@ -10,6 +10,7 @@
 #define LAST_COMMAND (2)
 #define MEDIUM_COMMAND (3)
 #define ONLY_COMMAND (4)
+#define BUF_SIZE (1024)
 
 using namespace std;
 
