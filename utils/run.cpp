@@ -28,6 +28,9 @@ map<string, int> run_cmd(
     cmd.push_back(NULL);
 
     pid_t pid = fork();
+    while (pid < 0) {
+        usleep(1000);
+    }
 
     if (pid == 0) {
         if (!is_only && !is_first) {
