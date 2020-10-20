@@ -62,7 +62,7 @@ void erase_num_pipe(vector<map<string, int>> &num_pipe_list) {
         if (it->second == 0) {
             // close pipe both end
             close(num_pipe_list.at(i).find("read")->second);
-            close(num_pipe_list.at(i).find("write")->second);
+            // close(num_pipe_list.at(i).find("write")->second);
             num_pipe_list.erase(num_pipe_list.begin() + i);
             i--;
         }
