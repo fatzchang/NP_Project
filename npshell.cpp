@@ -16,7 +16,6 @@
 using namespace std;
 
 int main() {
-    // signal(SIGCHLD, psignal_handler);
     string input;
     
     setenv("PATH", "bin:.", 1);
@@ -24,7 +23,7 @@ int main() {
     vector<pid_t> pid_table;
 
     while(1) {
-        cout << "% ";
+        cout << "% " << flush;
         getline(cin, input);
         stringstream ss(input);
         string token;
