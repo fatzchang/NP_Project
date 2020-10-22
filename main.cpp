@@ -1,7 +1,7 @@
 #include "npshell.h"
-#include "./utils/utils.h"
-#include "./utils/process.h"
-#include "./utils/run.h"
+#include "utils.h"
+#include "process.h"
+#include "run.h"
 
 #include <string>
 #include <sstream>
