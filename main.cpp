@@ -28,7 +28,7 @@ int main() {
         stringstream ss(input);
         string token;
         vector<char*> cmd;
-        int prev_pipe[2] = {-1, -1};
+        int prev_pipe_read = -1;
         
         if (input.length() != 0) {
             decrease_num_pipe(num_pipe_list);
@@ -58,18 +58,17 @@ int main() {
                 }
             }  else if (token == "|" || token == "!" || token == ">") {
                 collect_zombie(pid_table);
-                map<string, int> child_info = run_cmd(cmd, token, prev_pipe, false, num_pipe_list);
+                map<string, int> child_info = run_cmd(cmd, token, prev_pipe_read, false, num_pipe_list);
                 
                 // save recent pipe
-                prev_pipe[0] = child_info.find("read")->second;
-                prev_pipe[1] = child_info.find("write")->second;
+                prev_pipe_read = child_info.find("read")->second;
                 
                 if (token == ">") {
                     waitpid(child_info.find("pid")->second, NULL, 0);
                     string filename;
                     if (ss >> filename) {
-                        output(filename, prev_pipe[0]);
-                        close(prev_pipe[0]);
+                        output(filename, prev_pipe_read);
+                        close(prev_pipe_read);
                     }
                 }else {
                     pid_table.push_back(child_info.find("pid")->second);
@@ -94,7 +93,7 @@ int main() {
         map<string, int> child_info = run_cmd(
             cmd, 
             token.substr(0, 1), 
-            prev_pipe, 
+            prev_pipe_read, 
             !is_num_pipe, 
             num_pipe_list
         ); // num pipe is not the last

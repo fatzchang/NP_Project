@@ -12,23 +12,23 @@
 
 // pipe utils
 // stdin -> pipe's read end
-void link_pipe_read(int pipefd[2]) {
+void link_pipe_read(int pipe_read) {
    close(STDIN_FILENO);
-   dup(pipefd[0]);
-   close(pipefd[0]);
+   dup(pipe_read);
+   close(pipe_read);
 }
 
 // stdout -> pipe's write end
-void link_pipe_write(int pipefd[2], bool pipe_err) {
+void link_pipe_write(int pipe_write, bool pipe_err) {
     close(STDOUT_FILENO);
-    dup(pipefd[1]);
+    dup(pipe_write);
 
     if (pipe_err) {
         close(STDERR_FILENO);
-        dup(pipefd[1]);
+        dup(pipe_write);
     }
 
-    close(pipefd[1]);
+    close(pipe_write);
 }
 
 void output(

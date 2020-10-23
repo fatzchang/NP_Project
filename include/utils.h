@@ -14,8 +14,8 @@
 
 using namespace std;
 
-void link_pipe_read(int[2]);
-void link_pipe_write(int[2], bool);
+void link_pipe_read(int);
+void link_pipe_write(int, bool);
 
 
 void output(string, int);
