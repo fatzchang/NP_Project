@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "cmd.h"
 #include <unistd.h>
 #include <string>
 #include <vector>
@@ -49,20 +50,19 @@ void output(
 
 
 
-void decrease_num_pipe(vector<map<string, int>> &num_pipe_list) {
+void decrease_num_pipe(vector<Cmd *> &num_pipe_list) {
     for (size_t i = 0; i < num_pipe_list.size(); i++) {
-        map<string, int>::iterator it = num_pipe_list.at(i).find("counter");
-        (it->second)--;
+        num_pipe_list.at(i)->decrease_counter();
     }
 }
 
-void erase_num_pipe(vector<map<string, int>> &num_pipe_list) {
+// close pipe read and erase from list
+void erase_num_pipe(vector<Cmd *> &num_pipe_list) {
     for (size_t i = 0; i < num_pipe_list.size(); i++) {
-        map<string, int>::iterator it = num_pipe_list.at(i).find("counter");
-        if (it->second == 0) {
-            // close pipe both end
-            close(num_pipe_list.at(i).find("read")->second);
-            // close(num_pipe_list.at(i).find("write")->second);
+        int counter = num_pipe_list.at(i)->get_counter();
+        if (counter == 0) {
+            close(num_pipe_list.at(i)->get_pipe_read());
+            delete num_pipe_list.at(i);
             num_pipe_list.erase(num_pipe_list.begin() + i);
             i--;
         }
@@ -83,17 +83,17 @@ int get_pipe_counter(string token) {
 }
 
 
-int pipe_worker(vector<map<string, int>> &num_pipe_list) {
+int pipe_worker(vector<Cmd *> &num_pipe_list) {
     int pipefd[2];
     pipe(pipefd);
     int stdout_tmp = dup(STDOUT_FILENO);
     replace_fd(STDOUT_FILENO, pipefd[1]);
     
     for (size_t i = 0; i < num_pipe_list.size(); i++) {
-        if (num_pipe_list.at(i).find("counter")->second == 0) {
+        if (num_pipe_list.at(i)->get_counter() == 0) {
             char buf[BUF_SIZE + 1];
             int num_read;
-            while ((num_read = read(num_pipe_list.at(i).find("read")->second, buf, BUF_SIZE)) > 0) {
+            while ((num_read = read(num_pipe_list.at(i)->get_pipe_read(), buf, BUF_SIZE)) > 0) {
                 buf[num_read] = '\0';
                 cout << buf;
             }
@@ -111,11 +111,12 @@ void replace_fd(int ori, int targ) {
     close(targ);
 }
 
-bool pipe_exist(vector<map<string, int>> &num_pipe_list) {
+// exist at least a pipe that's ready to be read
+bool pipe_exist(vector<Cmd *> &num_pipe_list) {
     bool exist = false;
     for (size_t i = 0; i < num_pipe_list.size(); i++)
     {
-        if (num_pipe_list.at(i).find("counter")->second == 0) {
+        if (num_pipe_list.at(i)->get_counter() == 0) {
             exist = true;
             break;
         }
