@@ -29,6 +29,7 @@ int main() {
         string token;
         int prev_pipe_read = -1;
         
+        // decrease if input is not empty
         if (input.length() != 0) {
             decrease_num_pipe(num_pipe_list);
         }
@@ -59,13 +60,7 @@ int main() {
                 }
             }  else if (token == "|" || token == "!" || token == ">") {
                 collect_zombie(pid_table);
-                pid_t pid = run_cmd(
-                    *cmd, 
-                    token, 
-                    prev_pipe_read, 
-                    false, 
-                    num_pipe_list
-                );
+                pid_t pid = run_cmd(*cmd, token, prev_pipe_read, false, num_pipe_list);
                 
                 // save recent pipe
                 prev_pipe_read = cmd->get_pipe_read();
