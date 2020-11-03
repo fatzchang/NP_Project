@@ -2,3 +2,7 @@
 /commands
 
 /npshell
+/np_simple
+
+
+*.o
