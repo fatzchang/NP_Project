@@ -1,16 +1,25 @@
 CPP=g++
-EXEC=npshell
-SRC_DIR=src
-INCL_DIR=include
-BIN_DIR=bin
-MAIN=np
-SRCS=${wildcard ${SRC_DIR}/*}
+CC=gcc
+NPSHELL_EXEC=npshell
+NPSHELL_SRC_DIR=src/npshell
+NPSHELL_INCL_DIR=include/npshell
+NPSHELL_SRCS=${wildcard ${NPSHELL_SRC_DIR}/*}
+
+NPSIMPLE_EXEC=np_simple
+NPSIMPLE_SRC_DIR=src/np_simple
+NPSIMPLE_INCL_DIR=include/np_simple
+NPSIMPLE_SRCS=${wildcard ${NPSIMPLE_SRC_DIR}/*}
 
 
+all: npshell np_simple
 
-all: ${SRCS} main.cpp
-	${CPP} -o ${EXEC} ${SRCS} main.cpp -I${INCL_DIR} -std=c++11
+
+npshell: ${NPSHELL_SRCS}
+	${CPP} -o ${NPSHELL_EXEC} ${NPSHELL_SRCS} -I${NPSHELL_INCL_DIR} -std=c++11
+
+np_simple: 
+	${CC} -o ${NPSIMPLE_EXEC} ${NPSIMPLE_SRCS} -I${NPSIMPLE_INCL_DIR}
 
 clean:
 	@rm -rf ${BIN_DIR}
-	@rm -f ${EXEC}
+	@rm -f ${NPSHELL_EXEC}
