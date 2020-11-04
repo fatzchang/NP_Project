@@ -24,12 +24,8 @@ all: npshell np_simple np_single_proc
 npshell: ${NPSHELL_SRCS}
 	${CPP} -o ${NPSHELL_EXEC} ${NPSHELL_SRCS} -I${NPSHELL_INCL_DIR} -std=c++11
 
-np_simple:${NPSIMPLE_OBJS}
-	${CC} -o ${NPSIMPLE_EXEC} ${NPSIMPLE_OBJS}
-
-src/np_simple/%.o:${NPSIMPLE_SRC_DIR}/%.c
-	${CC} -I${NPSIMPLE_INCL_DIR} -c $< -o $@
-
+np_simple:${NPSIMPLE_SRCS}
+	${CC} -o ${NPSIMPLE_EXEC} ${NPSIMPLE_SRCS} -I${NPSIMPLE_INCL_DIR}
 
 np_single_proc: 
 	${CPP} -o ${NPSINGLEPROC_EXEC} ${NPSINGLEPROC_SRCS} -I${NPSINGLEPROC_INCL_DIR}

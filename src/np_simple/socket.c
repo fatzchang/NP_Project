@@ -1,6 +1,7 @@
 #include "socket.h"
 #include "np_simple.h"
 
+#include <stdio.h>
 #include <arpa/inet.h>
 #include <string.h>
 
@@ -11,6 +12,7 @@ int passiveTCP(int port, int qlen)
 
   // TODO: include
   bzero((char *)&sin, sizeof(sin));
+  
   // fill in sock data structure
   sin.sin_family = AF_INET;
   sin.sin_addr.s_addr = INADDR_ANY;
@@ -20,17 +22,17 @@ int passiveTCP(int port, int qlen)
 
   if (s < 0)
   {
-    // err
+    perror("socket create failed");
   }
 
   if (bind(s, (struct sockaddr *)&sin, sizeof(sin)) < 0)
   {
-    //err
+    perror("socket bind failed");
   }
 
   if (listen(s, qlen) < 0)
   {
-    // err
+    perror("socket listen failed");
   }
 
   return s;

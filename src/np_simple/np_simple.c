@@ -7,16 +7,18 @@
 #include <stdlib.h>
 
 
-int main()
+int main(int argc, char *argv[])
 {
   int msock, ssock, c_addr_len;
   struct sockaddr_in fsin;
 
-  // FIXIT: qlen
-  msock = passiveTCP(SERVICE_PORT, 10);
+  // printf("hello, your port is: %d\n", atoi(argv[1]));
+
+  msock = passiveTCP(atoi(argv[1]), 5);
   while (1)
   {
     ssock = accept(msock, (struct sockaddr *)&fsin, &c_addr_len);
+    // printf("Hello");
 
     if (ssock < 0) {
       // err, exit
