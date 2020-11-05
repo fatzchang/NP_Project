@@ -3,6 +3,6 @@
 
 /npshell
 /np_simple
-
+/np_single_proc
 
 *.o
