@@ -18,7 +18,7 @@ NPSINGLEPROC_INCL_DIR=include/np_single_proc
 NPSINGLEPROC_SRCS=${wildcard ${NPSINGLEPROC_SRC_DIR}/*}
 
 
-all: npshell np_simple np_single_proc
+all: npshell np_simple
 
 
 npshell: ${NPSHELL_SRCS}

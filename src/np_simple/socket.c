@@ -5,12 +5,12 @@
 #include <arpa/inet.h>
 #include <string.h>
 
+
 int passiveTCP(int port, int qlen)
 {
   int s;
   struct sockaddr_in sin;
 
-  // TODO: include
   bzero((char *)&sin, sizeof(sin));
   
   // fill in sock data structure
