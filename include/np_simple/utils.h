@@ -1,6 +1,7 @@
 #ifndef __UTIL_H
 #define __UTIL_H
 
+#include "cmd.h"
 #include <vector>
 #include <unistd.h>
 #include <string>
@@ -14,18 +15,18 @@
 
 using namespace std;
 
-void link_pipe_read(int[2]);
-void link_pipe_write(int[2], bool);
+void link_pipe_read(int);
+void link_pipe_write(int, bool);
 
 
 void output(string, int);
 
-void decrease_num_pipe(vector<map<string, int>> &);
-void erase_num_pipe(vector<map<string, int>> &);
+void decrease_num_pipe(vector<Cmd *> &);
+void erase_num_pipe(vector<Cmd *> &);
 
 int get_pipe_counter(string);
-int pipe_worker(vector<map<string, int>> &);
+int pipe_worker(vector<Cmd *> &);
 void replace_fd(int, int);
-bool pipe_exist(vector<map<string, int>> &);
+bool pipe_exist(vector<Cmd *> &);
 
 #endif

@@ -1,11 +1,11 @@
 #ifndef __RUN_H
 #define __RUN_H
 
-#include <map>
 #include <vector>
+#include <cmd.h>
 
 using namespace std;
 
-map<string, int> run_cmd(vector<char*> &, string , int[2], bool, vector<map<string, int>> &);
+pid_t run_cmd(Cmd &, string , int, bool, vector<Cmd *> &);
 
 #endif

@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "process.h"
 #include "run.h"
+#include "cmd.h"
 
 #include <string>
 #include <sstream>
@@ -10,7 +11,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/wait.h>
-#include <map>
 #include <cstring>
 
 using namespace std;
@@ -18,7 +18,7 @@ using namespace std;
 int npshell() {
     signal(SIGCHLD, psignal_handler);
     setenv("PATH", "bin:.", 1);
-    vector<map<string, int>> num_pipe_list;
+    vector<Cmd *> num_pipe_list;
     vector<pid_t> pid_table;
 
     while(1) {
@@ -27,28 +27,30 @@ int npshell() {
         getline(cin, input);
         stringstream ss(input);
         string token;
-        vector<char*> cmd;
-        int prev_pipe[2] = {-1, -1};
+        int prev_pipe_read = -1;
         
+        // decrease if input is not empty
         if (input.length() != 0) {
             decrease_num_pipe(num_pipe_list);
         }
 
-        while(ss >> token) {
-            char *t = (char *)malloc(sizeof(char)*(token.size()+1));
-            memset(t, 0, sizeof(char) * (token.size()+1));
-            token.copy(t, token.size());
+        Cmd *cmd = new Cmd();
 
+        while(ss >> token) {
             if (token == "setenv") {
                 string env, value;
-                if (ss >> env && ss >> value) {
+                ss >> env;
+                ss >> value;
+
+                if (env.size() && value.size()) {
                     setenv(env.c_str(), value.c_str(), 1);
                 } else {
                     cerr << "missing arguments" << endl;
                 }
             } else if (token == "printenv") {
                 string env;
-                if (ss >> env) {
+                ss >> env;
+                if (env.size()) {
                     char *env_value = getenv(env.c_str());
                     if (env_value != NULL) {
                         cout << env_value << endl;
@@ -58,57 +60,54 @@ int npshell() {
                 }
             }  else if (token == "|" || token == "!" || token == ">") {
                 collect_zombie(pid_table);
-                map<string, int> child_info = run_cmd(cmd, token, prev_pipe, false, num_pipe_list);
+                pid_t pid = run_cmd(*cmd, token, prev_pipe_read, false, num_pipe_list);
                 
                 // save recent pipe
-                prev_pipe[0] = child_info.find("read")->second;
-                prev_pipe[1] = child_info.find("write")->second;
+                prev_pipe_read = cmd->get_pipe_read();
                 
                 if (token == ">") {
-                    waitpid(child_info.find("pid")->second, NULL, 0);
+                    waitpid(pid, NULL, 0);
                     string filename;
                     if (ss >> filename) {
-                        output(filename, prev_pipe[0]);
-                        close(prev_pipe[0]);
+                        output(filename, prev_pipe_read);
+                        close(prev_pipe_read);
                     }
                 }else {
-                    pid_table.push_back(child_info.find("pid")->second);
+                    pid_table.push_back(pid);
                 }
 
-                cmd.clear();
+                delete cmd;
+                cmd = new Cmd();
             } else if (token == "exit") {
                 return 0;
             } else  {
-                cmd.push_back(t); 
+                cmd->append(token);
             }
         }
         collect_zombie(pid_table);
-        // conver |number to int
+        // convert |number to int
         int pipe_counter = get_pipe_counter(token);
         bool is_num_pipe = (pipe_counter > 0) && (token.substr(0, 1) == "|" || token.substr(0, 1) == "!");
 
         if (is_num_pipe) {
-            cmd.pop_back();
+            cmd->remove_last();
         }
         
-        map<string, int> child_info = run_cmd(
-            cmd, 
+        pid_t pid = run_cmd(
+            *cmd, 
             token.substr(0, 1), 
-            prev_pipe, 
+            prev_pipe_read, 
             !is_num_pipe, 
             num_pipe_list
         ); // num pipe is not the last
 
-        if (is_num_pipe) {    
-            child_info.insert(pair<string, int>("counter", pipe_counter));
-            num_pipe_list.push_back(child_info);
+
+        if (is_num_pipe) {
+            cmd->set_counter(pipe_counter);
+            num_pipe_list.push_back(cmd);
         }
    
-        waitpid(child_info.find("pid")->second, NULL, 0);
-
-        cmd.clear();
-
-        // TODO: free malloc, combine with cmd.clear
+        waitpid(pid, NULL, 0);
     }
 
     return 0;
