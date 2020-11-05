@@ -6,4 +6,5 @@
 #define MEDIUM_COMMAND (3)
 #define ONLY_COMMAND (4)
 
+int npshell();
 #endif

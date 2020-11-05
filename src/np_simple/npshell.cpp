@@ -15,7 +15,7 @@
 
 using namespace std;
 
-int main() {
+int npshell() {
     signal(SIGCHLD, psignal_handler);
     setenv("PATH", "bin:.", 1);
     vector<map<string, int>> num_pipe_list;

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <npshell.h>
 // #include <errno.h>
 
 void reaper();
@@ -15,11 +16,11 @@ void reaper();
 
 int main(int argc, char *argv[])
 {
-  signal(SIGCHLD, reaper);
+  // signal(SIGCHLD, reaper);
   int msock;
   int ssock;
   struct sockaddr_in fsin;
-  int c_addr_len = sizeof((struct sockaddr *)&fsin);
+  socklen_t c_addr_len = sizeof((struct sockaddr *)&fsin);
 
   // extern int errno;
 
@@ -49,9 +50,7 @@ int main(int argc, char *argv[])
       close(ssock);
       close(msock);
 
-      execl("npshell", "npshell", (char *) NULL);
-      perror("failed to execute npshell");
-      exit(0);
+      exit(npshell());
     } else {
       close(ssock);
     }
