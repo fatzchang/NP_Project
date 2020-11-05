@@ -16,7 +16,6 @@ void reaper();
 int main(int argc, char *argv[])
 {
   signal(SIGCHLD, reaper);
-
   int msock;
   int ssock;
   struct sockaddr_in fsin;
@@ -51,6 +50,7 @@ int main(int argc, char *argv[])
       close(msock);
 
       execl("npshell", "npshell", (char *) NULL);
+      perror("failed to execute npshell");
       exit(0);
     } else {
       close(ssock);
