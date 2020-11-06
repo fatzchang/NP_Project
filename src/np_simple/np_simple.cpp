@@ -7,25 +7,18 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <sys/wait.h>
-#include <npshell.h>
-// #include <errno.h>
+#include <npshell_simple.h>
 
 void reaper();
 
-
-
 int main(int argc, char *argv[])
 {
+  // TODO: collect zombie
   // signal(SIGCHLD, reaper);
   int msock;
   int ssock;
   struct sockaddr_in fsin;
   socklen_t c_addr_len = sizeof((struct sockaddr *)&fsin);
-
-  // extern int errno;
-
-  // printf("hello, your port is: %d\n", atoi(argv[1]));
-
   msock = passiveTCP(atoi(argv[1]), 5);
   printf("msock: %d\n", msock);
   while (1)
@@ -50,7 +43,7 @@ int main(int argc, char *argv[])
       close(ssock);
       close(msock);
 
-      exit(npshell());
+      exit(npshell_simple());
     } else {
       close(ssock);
     }
@@ -59,7 +52,6 @@ int main(int argc, char *argv[])
 
   return 0;
 }
-
 
 
 void reaper() {

@@ -1,113 +1,54 @@
-#include "npshell.h"
-#include "utils.h"
-#include "process.h"
-#include "run.h"
-#include "cmd.h"
+#include "socket.h"
+#include "npshell_proc.h"
 
-#include <string>
-#include <sstream>
-#include <iostream>
-#include <vector> 
-#include <unistd.h>
+#include <sys/select.h>
 #include <stdlib.h>
-#include <sys/wait.h>
-#include <cstring>
+#include <unistd.h>
+#include <string.h>
+#include <sys/time.h>
+#include <iostream>
+#include <arpa/inet.h>
 
-using namespace std;
+int main(int argc, char *argv[]) {
+    int msock;
+    fd_set afds;
+    fd_set rfds;
+    struct sockaddr_in fsin;
+    socklen_t alen;
+    int nfds;
 
-int main() {
-    signal(SIGCHLD, psignal_handler);
-    setenv("PATH", "bin:.", 1);
-    vector<Cmd *> num_pipe_list;
-    vector<pid_t> pid_table;
+    msock = passiveTCP(atoi(argv[2]), 5);
+    nfds = getdtablesize();
 
-    while(1) {
-        string input;
-        cout << "% ";
-        getline(cin, input);
-        stringstream ss(input);
-        string token;
-        int prev_pipe_read = -1;
-        
-        // decrease if input is not empty
-        if (input.length() != 0) {
-            decrease_num_pipe(num_pipe_list);
+    FD_ZERO(&afds);
+    FD_SET(msock, &afds);
+
+    while (1)
+    {
+        memcpy(&rfds, &afds, sizeof(rfds));
+        if (select(nfds, &rfds, (fd_set *)0, (fd_set *)0, (struct timeval *)0) < 0) {
+            std::cerr << "select error" << std::endl;
         }
 
-        Cmd *cmd = new Cmd();
+        if (FD_ISSET(msock, &rfds)) {
+            int ssock;
+            alen = sizeof(fsin);
 
-        while(ss >> token) {
-            if (token == "setenv") {
-                string env, value;
-                ss >> env;
-                ss >> value;
+            ssock = accept(msock, (struct sockaddr *)&fsin, &alen);
+            if (ssock < 0) {
+                std::cerr << "ssock accept failed" << std::endl;
+            }
 
-                if (env.size() && value.size()) {
-                    setenv(env.c_str(), value.c_str(), 1);
-                } else {
-                    cerr << "missing arguments" << endl;
-                }
-            } else if (token == "printenv") {
-                string env;
-                ss >> env;
-                if (env.size()) {
-                    char *env_value = getenv(env.c_str());
-                    if (env_value != NULL) {
-                        cout << env_value << endl;
-                    }
-                }else {
-                    cerr << "missing arguments" << endl;
-                }
-            }  else if (token == "|" || token == "!" || token == ">") {
-                collect_zombie(pid_table);
-                pid_t pid = run_cmd(*cmd, token, prev_pipe_read, false, num_pipe_list);
-                
-                // save recent pipe
-                prev_pipe_read = cmd->get_pipe_read();
-                
-                if (token == ">") {
-                    waitpid(pid, NULL, 0);
-                    string filename;
-                    if (ss >> filename) {
-                        output(filename, prev_pipe_read);
-                        close(prev_pipe_read);
-                    }
-                }else {
-                    pid_table.push_back(pid);
-                }
+            FD_SET(ssock, &afds);
+        }
 
-                delete cmd;
-                cmd = new Cmd();
-            } else if (token == "exit") {
-                return 0;
-            } else  {
-                cmd->append(token);
+        for (int fd = 0; fd < nfds; fd++) {
+            if (fd != msock && FD_ISSET(fd, &rfds)) {
+                npshell_proc(fd);
             }
         }
-        collect_zombie(pid_table);
-        // convert |number to int
-        int pipe_counter = get_pipe_counter(token);
-        bool is_num_pipe = (pipe_counter > 0) && (token.substr(0, 1) == "|" || token.substr(0, 1) == "!");
-
-        if (is_num_pipe) {
-            cmd->remove_last();
-        }
         
-        pid_t pid = run_cmd(
-            *cmd, 
-            token.substr(0, 1), 
-            prev_pipe_read, 
-            !is_num_pipe, 
-            num_pipe_list
-        ); // num pipe is not the last
-
-
-        if (is_num_pipe) {
-            cmd->set_counter(pipe_counter);
-            num_pipe_list.push_back(cmd);
-        }
-   
-        waitpid(pid, NULL, 0);
+        
     }
 
     return 0;

@@ -1,8 +1,9 @@
-#include "npshell_simple.h"
+#include "npshell_proc.h"
 #include "utils.h"
 #include "process.h"
 #include "run.h"
 #include "cmd.h"
+
 
 #include <string>
 #include <sstream>
@@ -15,11 +16,13 @@
 
 using namespace std;
 
-int npshell_simple() {
+int npshell_proc(int fd) {
     signal(SIGCHLD, psignal_handler);
     setenv("PATH", "bin:.", 1);
     vector<Cmd *> num_pipe_list;
     vector<pid_t> pid_table;
+    
+
 
     while(1) {
         string input;
