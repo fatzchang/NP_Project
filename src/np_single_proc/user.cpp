@@ -39,17 +39,30 @@ void user::welcome() {
 }
 
 // ulist
+std::queue<int> ulist::id_queue;
+int ulist::max_id = 0;
 std::set<std::string> ulist::name_set;
 std::map<int , user *> ulist::fd_mapper;
 std::map<int , user *> ulist::id_mapper;
 
-void ulist::add(user *client) {
+void ulist::add(int ssock, std::string ip) {
+    int client_id;
+    if (id_queue.empty()) {
+        client_id = max_id;
+        max_id++;    
+    } else {
+        client_id = id_queue.front();
+        id_queue.pop();
+    }
+    user *client = new user(ssock, client_id, ip);
+    client->welcome();
+
     std::string login_broadcast = "*** User ’(no name)’ entered from ";
     login_broadcast += client->get_ip();
     login_broadcast += ". ***";
-
     broadcast(login_broadcast.c_str(), login_broadcast.size());
 
+    // add to list
     name_set.insert(client->name);
     fd_mapper.insert(std::pair<int, user *>(client->get_sockfd(), client));
     id_mapper.insert(std::pair<int, user *>(client->get_id(), client));

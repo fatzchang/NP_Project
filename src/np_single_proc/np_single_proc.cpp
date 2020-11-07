@@ -20,13 +20,9 @@ int main(int argc, char *argv[]) {
     socklen_t alen;
     int nfds, fd;
 
-    std::queue<int> id_queue;
-    int max_id = 0;
-
-
     msock = passiveTCP(atoi(argv[1]), 5);
     // nfds = getdtablesize();
-    nfds = 10; // FIXIT: getdtablesize is too large
+    nfds = 100; // FIXIT: getdtablesize is too large
 
     FD_ZERO(&afds);
     FD_SET(msock, &afds);
@@ -51,25 +47,13 @@ int main(int argc, char *argv[]) {
             std::cout << "ssock: " << ssock << std::endl;
 
             // initialize client
-            int client_id;
+            
             char ip_c_string[INET_ADDRSTRLEN];
             
             inet_ntop(AF_INET, &fsin.sin_addr, ip_c_string, INET_ADDRSTRLEN);
             
-            if (id_queue.empty()) {
-                client_id = max_id;
-                max_id++;    
-            } else {
-                client_id = id_queue.front();
-                id_queue.pop();
-            }
-
-            user *client = new user(ssock, client_id, std::string(ip_c_string));
-
-            ulist::add(client);
+            ulist::add(ssock, std::string(ip_c_string));
             FD_SET(ssock, &afds);
-
-            client->welcome();
         }
         // backup default std fd
         int stdin_tmp, stdout_tmp, stderr_tmp;
@@ -83,7 +67,6 @@ int main(int argc, char *argv[]) {
                     close(fd);
                     FD_CLR(fd, &afds);
                 }
-
             }
         }
 
