@@ -1,19 +1,32 @@
 #include <string>
 #include <map>
+#include <set>
 
 class user {
 public:
-    void recieve();
+    user(int sockfd, int id, std::string ip);
+    std::string name;
+    void change_name(std::string new_name);
+
+    int get_id();
+    int get_sockfd();
+    std::string get_path();
+
+    void welcome();
+    
 
 private:
     int id;
-    std::string name;
+    std::string ip;
+    std::string path; // default: bin:.
+    int fd;
 };
 
-class user_list{
+class ulist{
 public:
-    void send(int user_id);
-
-private:
-    std::map<int , user> list;    
+    static std::map<int , user *> fd_mapper;
+    static std::map<int , user *> id_mapper;
+    static std::set<std::string> name_set;
+    static void add(user *user);
+    static user * find_by_fd(int fd);
 };
