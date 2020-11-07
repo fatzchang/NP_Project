@@ -1,5 +1,7 @@
 #include "utils.h"
 #include "cmd.h"
+#include "user.h"
+
 #include <unistd.h>
 #include <string>
 #include <vector>
@@ -9,6 +11,7 @@
 #include <cstring>
 #include <map>
 #include <sys/wait.h>
+
 
 
 // pipe utils
@@ -132,4 +135,26 @@ void replace_fd(int fd) {
     dup(fd);
     close(STDERR_FILENO);
     dup(fd);
+}
+
+
+void who(int my_fd) {
+    std::map<int, user *>::iterator it;
+    std::string head = "<ID>\t<nickname>\t<IP:port>\t<indicate me>\n";
+    std::string body;
+    for (it = ulist::id_mapper.begin(); it != ulist::id_mapper.end(); it++) {
+        user *u = it->second;
+        body += to_string(u->get_id());
+        body +=  "\t";
+        body += u->name;
+        body += "\t";
+        body += u->get_ip();
+        body += "\t";
+        if (u->get_sockfd() == my_fd) {
+            body += "<- me";
+        }
+        body += "\n";
+    }
+    body = head + body;
+    write(my_fd, body.c_str(), body.size());
 }

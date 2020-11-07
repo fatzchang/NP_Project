@@ -33,6 +33,10 @@ std::string user::get_path() {
     return this->path;
 }
 
+void user::set_path(std::string new_path) {
+    this->path = new_path;
+}
+
 void user::welcome() {
     char welcome_msg[] = "***************************************\n** Welcome to the information server **\n***************************************\n% ";
     write(this->fd, welcome_msg, sizeof(welcome_msg));
@@ -40,7 +44,7 @@ void user::welcome() {
 
 // ulist
 std::queue<int> ulist::id_queue;
-int ulist::max_id = 0;
+int ulist::max_id = 1;
 std::set<std::string> ulist::name_set;
 std::map<int , user *> ulist::fd_mapper;
 std::map<int , user *> ulist::id_mapper;

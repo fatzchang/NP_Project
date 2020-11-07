@@ -13,6 +13,7 @@ public:
     int get_sockfd();
     std::string get_ip();
     std::string get_path();
+    void set_path(std::string new_path);
 
     void welcome();
     

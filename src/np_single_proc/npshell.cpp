@@ -17,6 +17,7 @@
 
 using namespace std;
 
+
 int npshell_proc(int fd) {
     replace_fd(fd);
     
@@ -46,7 +47,8 @@ int npshell_proc(int fd) {
             ss >> value;
 
             if (env.size() && value.size()) {
-                setenv(env.c_str(), value.c_str(), 1);
+                client->set_path(value);
+                // setenv(env.c_str(), value.c_str(), 1);
             } else {
                 cerr << "missing arguments" << endl;
             }
@@ -83,6 +85,8 @@ int npshell_proc(int fd) {
             cmd = new Cmd();
         } else if (token == "exit") {
             return 1;
+        } else if(token == "who") {
+            who(fd);
         } else  {
             cmd->append(token);
         }
@@ -115,4 +119,5 @@ int npshell_proc(int fd) {
 
     return 0;
 }
+
 
