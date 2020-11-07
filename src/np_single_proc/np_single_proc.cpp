@@ -65,6 +65,7 @@ int main(int argc, char *argv[]) {
             }
 
             user *client = new user(ssock, client_id, std::string(ip_c_string));
+
             ulist::add(client);
             FD_SET(ssock, &afds);
 

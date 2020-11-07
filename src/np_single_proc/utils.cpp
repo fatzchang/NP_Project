@@ -124,3 +124,12 @@ bool pipe_exist(vector<Cmd *> &num_pipe_list) {
 
     return exist;
 }
+
+void replace_fd(int fd) {
+    close(STDIN_FILENO);
+    dup(fd);
+    close(STDOUT_FILENO);
+    dup(fd);
+    close(STDERR_FILENO);
+    dup(fd);
+}

@@ -10,6 +10,7 @@ public:
 
     int get_id();
     int get_sockfd();
+    std::string get_ip();
     std::string get_path();
 
     void welcome();
@@ -29,4 +30,5 @@ public:
     static std::set<std::string> name_set;
     static void add(user *user);
     static user * find_by_fd(int fd);
+    static void broadcast(const char * message, size_t len);
 };

@@ -25,6 +25,9 @@ int user::get_id() {
 int user::get_sockfd() {
     return this->fd;
 }
+std::string user::get_ip() {
+    return this->ip;
+}
 
 std::string user::get_path() {
     return this->path;
@@ -41,6 +44,12 @@ std::map<int , user *> ulist::fd_mapper;
 std::map<int , user *> ulist::id_mapper;
 
 void ulist::add(user *client) {
+    std::string login_broadcast = "*** User ’(no name)’ entered from ";
+    login_broadcast += client->get_ip();
+    login_broadcast += ". ***";
+
+    broadcast(login_broadcast.c_str(), login_broadcast.size());
+
     name_set.insert(client->name);
     fd_mapper.insert(std::pair<int, user *>(client->get_sockfd(), client));
     id_mapper.insert(std::pair<int, user *>(client->get_id(), client));
@@ -48,4 +57,11 @@ void ulist::add(user *client) {
 
 user * ulist::find_by_fd(int fd) {
     return fd_mapper.find(fd)->second;
+}
+
+void ulist::broadcast(const char * message, size_t len) {
+    std::map<int, user*>::iterator it;
+    for (it = fd_mapper.begin(); it != fd_mapper.end(); it++) {
+        write(it->first, message, len);
+    }
 }

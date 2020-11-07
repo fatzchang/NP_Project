@@ -17,8 +17,6 @@
 
 using namespace std;
 
-void replace_fd(int fd);
-
 int npshell_proc(int fd) {
     replace_fd(fd);
     
@@ -118,11 +116,3 @@ int npshell_proc(int fd) {
     return 0;
 }
 
-void replace_fd(int fd) {
-    close(STDIN_FILENO);
-    dup(fd);
-    close(STDOUT_FILENO);
-    dup(fd);
-    close(STDERR_FILENO);
-    dup(fd);
-}

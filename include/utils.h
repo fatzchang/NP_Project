@@ -29,4 +29,6 @@ int pipe_worker(vector<Cmd *> &);
 void replace_fd(int, int);
 bool pipe_exist(vector<Cmd *> &);
 
+void replace_fd(int fd);
+
 #endif
