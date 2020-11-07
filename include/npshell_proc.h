@@ -6,6 +6,8 @@
 #define MEDIUM_COMMAND (3)
 #define ONLY_COMMAND (4)
 
-int npshell_proc(int sockfd);
+// #include "user.h"
+
+int npshell_proc(int fd);
 
 #endif

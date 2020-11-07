@@ -15,12 +15,12 @@ NPSINGLEPROC_SRCS=${wildcard ${NPSINGLEPROC_SRC_DIR}/*}
 INCLUDE_DIR=include
 
 
-all: np_single_proc np_simple
+all: np_single_proc
 
 np_simple:${NPSIMPLE_SRCS}
 	${CPP} -o ${NPSIMPLE_EXEC} ${NPSIMPLE_SRCS} -I${INCLUDE_DIR} -std=c++11
 
-np_single_proc: 
+np_single_proc: ${NPSINGLEPROC_SRCS}
 	${CPP} -o ${NPSINGLEPROC_EXEC} ${NPSINGLEPROC_SRCS} -I${INCLUDE_DIR} -std=c++11
 
 clean:
