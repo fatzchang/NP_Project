@@ -4,6 +4,7 @@
 #include "run.h"
 #include "cmd.h"
 #include "user.h"
+#include "message.h"
 
 
 #include <string>
@@ -87,7 +88,7 @@ int npshell_proc(int fd) {
             return 1;
         } else if (token == "who") {
             who(fd);
-        }  else if (token == "name") {
+        } else if (token == "name") {
             string name;
             ss >> name;
             if (name.size()) {
@@ -95,6 +96,12 @@ int npshell_proc(int fd) {
             }else {
                 cerr << "missing arguments" << endl;
             }
+        } else if (token == "yell") {
+            string msg;
+            ss >> msg;
+            std::string broadcast_msg = yell_msg(client->name, msg);
+            ulist::broadcast(broadcast_msg.c_str(), broadcast_msg.size());
+
         } else  {
             cmd->append(token);
         }

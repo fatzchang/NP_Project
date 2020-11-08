@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 
     msock = passiveTCP(atoi(argv[1]), 5);
     // nfds = getdtablesize();
-    nfds = 100; // FIXIT: getdtablesize is too large
+    nfds = 200; // FIXIT: getdtablesize is too large
 
     FD_ZERO(&afds);
     FD_SET(msock, &afds);
@@ -45,8 +45,6 @@ int main(int argc, char *argv[]) {
             
             std::cout << "someone comes in!" << std::endl;
             std::cout << "ssock: " << ssock << std::endl;
-
-            // initialize client
             
             char ip_c_string[INET_ADDRSTRLEN];
             

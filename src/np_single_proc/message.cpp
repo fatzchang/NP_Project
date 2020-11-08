@@ -36,3 +36,14 @@ std::string logout_msg(std::string name) {
     
     return msg;
 }
+
+std::string yell_msg(std::string name, std::string message) {
+    std::string msg;
+    msg += "*** ";
+    msg += name;
+    msg += " yelled ***: ";
+    msg += message;
+    msg += "\n";
+
+    return msg;
+}
