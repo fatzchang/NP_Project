@@ -24,8 +24,7 @@ int npshell_proc(int fd) {
     user * client = ulist::find_by_fd(fd);
 
     setenv("PATH", (client->get_path()).c_str(), 1);
-
-    vector<Cmd *> num_pipe_list;
+    
     vector<pid_t> pid_table;
     string input;
     getline(cin, input);
@@ -35,7 +34,7 @@ int npshell_proc(int fd) {
     
     // decrease if input is not empty
     if (input.length() != 0) {
-        decrease_num_pipe(num_pipe_list);
+        decrease_num_pipe(client->num_pipe_list);
     }
 
     Cmd *cmd = new Cmd();
@@ -65,7 +64,7 @@ int npshell_proc(int fd) {
             }
         }  else if (token == "|" || token == "!" || token == ">") {
             collect_zombie(pid_table);
-            pid_t pid = run_cmd(*cmd, token, prev_pipe_read, false, num_pipe_list);
+            pid_t pid = run_cmd(*cmd, token, prev_pipe_read, false, client->num_pipe_list);
             
             // save recent pipe
             prev_pipe_read = cmd->get_pipe_read();
@@ -113,13 +112,13 @@ int npshell_proc(int fd) {
         token.substr(0, 1), 
         prev_pipe_read, 
         !is_num_pipe, 
-        num_pipe_list
+        client->num_pipe_list
     ); // num pipe is not the last
 
 
     if (is_num_pipe) {
         cmd->set_counter(pipe_counter);
-        num_pipe_list.push_back(cmd);
+        client->num_pipe_list.push_back(cmd);
     }
 
     waitpid(pid, NULL, 0);

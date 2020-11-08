@@ -3,22 +3,24 @@
 #include <map>
 #include <set>
 #include <queue>
+#include <vector>
+
+#include "cmd.h"
 
 class user {
 public:
-    user(int sockfd, int id, std::string ip, in_port_t port);
     std::string name;
-    void change_name(std::string new_name);
 
+    user(int sockfd, int id, std::string ip, in_port_t port);
+    void change_name(std::string new_name);
     int get_id();
     int get_sockfd();
     std::string get_ip();
     std::string get_path();
     void set_path(std::string new_path);
     in_port_t get_port();
-
     void welcome();
-    
+    std::vector<Cmd *> num_pipe_list;
 
 private:
     int id;
