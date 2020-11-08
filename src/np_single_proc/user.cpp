@@ -1,4 +1,5 @@
 #include "user.h"
+#include "message.h"
 #include <iostream>
 #include <unistd.h>
 #include <arpa/inet.h>
@@ -29,16 +30,7 @@ void user::change_name(std::string new_name) {
         name = new_name;
     }
 
-    std::string broadcast_msg;
-    broadcast_msg = "*** User from ";
-    broadcast_msg += this->ip;
-    broadcast_msg += ":";
-    broadcast_msg += std::to_string(this->port);
-    broadcast_msg += " is named ’";
-    broadcast_msg += new_name;
-    broadcast_msg += "’. ***\n";
-    
-
+    std::string broadcast_msg = change_name_msg(new_name, this->ip, std::to_string(this->port));
     ulist::broadcast(broadcast_msg.c_str(), broadcast_msg.size());  
 }
 
@@ -66,8 +58,8 @@ in_port_t user::get_port() {
 }
 
 void user::welcome() {
-    char welcome_msg[] = "***************************************\n** Welcome to the information server **\n***************************************\n% ";
-    write(this->fd, welcome_msg, sizeof(welcome_msg));
+    std::string msg = welcome_msg();
+    write(this->fd, msg.c_str(), msg.size());
 }
 
 
@@ -89,21 +81,15 @@ void ulist::add(int ssock, std::string ip, in_port_t port) {
     }
     user *client = new user(ssock, client_id, ip, port);
     client->welcome();
+    
+    // broadcast (exclude self)
+    std::string login_broadcast = login_msg(client->get_ip(), std::to_string(client->get_port()));
+    broadcast(login_broadcast.c_str(), login_broadcast.size());
 
     // add to list
     name_set.insert(client->name);
     fd_mapper.insert(std::pair<int, user *>(client->get_sockfd(), client));
     id_mapper.insert(std::pair<int, user *>(client->get_id(), client));
-
-    // broadcast (include self)
-    std::string login_broadcast = "*** User ’(no name)’ entered from ";
-    login_broadcast += client->get_ip();
-    login_broadcast += ":";
-    login_broadcast += std::to_string(client->get_port());
-    login_broadcast += ". ***\n";
-    broadcast(login_broadcast.c_str(), login_broadcast.size());
-
-    
 }
 
 user * ulist::find_by_fd(int fd) {
