@@ -2,7 +2,7 @@
 #include <string>
 
 std::string welcome_msg() {
-    return "****************************************\n** Welcome to the information server. **\n****************************************\n% ";
+    return "****************************************\n** Welcome to the information server. **\n****************************************\n";
 }
 
 std::string login_msg(std::string ip, std::string port) {

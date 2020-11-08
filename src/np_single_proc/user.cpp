@@ -60,6 +60,7 @@ in_port_t user::get_port() {
 void user::welcome() {
     std::string msg = welcome_msg();
     msg += login_msg(this->ip, std::to_string(this->port));
+    msg += "% ";
     write(this->fd, msg.c_str(), msg.size());
 }
 

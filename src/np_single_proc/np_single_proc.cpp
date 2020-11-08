@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
             char ip_c_string[INET_ADDRSTRLEN];
             
             inet_ntop(AF_INET, &fsin.sin_addr, ip_c_string, INET_ADDRSTRLEN);
-            ulist::add(ssock, std::string(ip_c_string), fsin.sin_port);
+            ulist::add(ssock, std::string(ip_c_string), ntohs(fsin.sin_port));
             FD_SET(ssock, &afds);
         }
         // backup default std fd
