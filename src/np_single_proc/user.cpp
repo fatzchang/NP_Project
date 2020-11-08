@@ -20,9 +20,9 @@ user::user(int sockfd, int user_id, std::string ip_addr, in_port_t in_port) {
 void user::change_name(std::string new_name) {
     if (name != new_name) {
         if (!ulist::change_name(name, new_name)) {
-            std::string err_msg = "*** User ’";
+            std::string err_msg = "*** User '";
             err_msg += new_name;
-            err_msg += "’ already exists. ***\n";
+            err_msg += "' already exists. ***\n";
             write(this->fd, err_msg.c_str(), err_msg.size());
             return;
         }
@@ -65,8 +65,9 @@ void user::welcome() {
 }
 
 user::~user() {
-    std::cout << "removing..." << std::endl;
     ulist::remove(this);
+    std::string broadcast_msg = logout_msg(this->name);
+    ulist::broadcast(broadcast_msg.c_str(), broadcast_msg.size());
 }
 
 

@@ -27,3 +27,12 @@ std::string change_name_msg(std::string name, std::string ip, std::string port) 
 
     return msg;
 }
+
+std::string logout_msg(std::string name) {
+    std::string msg;
+    msg = "*** User '";
+    msg += name;
+    msg += "' left. ***";
+    
+    return msg;
+}
