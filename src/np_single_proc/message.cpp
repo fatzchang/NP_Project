@@ -6,7 +6,7 @@ std::string welcome_msg() {
 }
 
 std::string login_msg(std::string ip, std::string port) {
-    std::string msg = "*** User ’(no name)’ entered from ";
+    std::string msg = "*** User '(no name)' entered from ";
     msg += ip;
     msg += ":";
     msg += port;

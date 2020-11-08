@@ -82,14 +82,15 @@ void ulist::add(int ssock, std::string ip, in_port_t port) {
     user *client = new user(ssock, client_id, ip, port);
     client->welcome();
     
-    // broadcast (exclude self)
-    std::string login_broadcast = login_msg(client->get_ip(), std::to_string(client->get_port()));
-    broadcast(login_broadcast.c_str(), login_broadcast.size());
 
     // add to list
     name_set.insert(client->name);
     fd_mapper.insert(std::pair<int, user *>(client->get_sockfd(), client));
     id_mapper.insert(std::pair<int, user *>(client->get_id(), client));
+
+    // broadcast (include self)
+    std::string login_broadcast = login_msg(client->get_ip(), std::to_string(client->get_port()));
+    broadcast(login_broadcast.c_str(), login_broadcast.size());
 }
 
 user * ulist::find_by_fd(int fd) {
