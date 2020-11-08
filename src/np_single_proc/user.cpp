@@ -64,6 +64,11 @@ void user::welcome() {
     write(this->fd, msg.c_str(), msg.size());
 }
 
+user::~user() {
+    std::cout << "removing..." << std::endl;
+    ulist::remove(this);
+}
+
 
 // ulist
 std::queue<int> ulist::id_queue;
@@ -127,4 +132,15 @@ bool ulist::change_name(std::string old_name, std::string new_name) {
     name_set.insert(new_name);
 
     return true;
+}
+
+void ulist::remove(user *client) {
+    id_queue.push(client->get_id());
+    std::map<int, user *>::iterator it;
+
+    it = fd_mapper.find(client->get_sockfd());
+    fd_mapper.erase(it);
+
+    it = id_mapper.find(client->get_id());
+    id_mapper.erase(it);
 }

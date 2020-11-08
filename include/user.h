@@ -9,9 +9,10 @@
 
 class user {
 public:
+    user(int sockfd, int id, std::string ip, in_port_t port);
+   ~user();
     std::string name;
 
-    user(int sockfd, int id, std::string ip, in_port_t port);
     void change_name(std::string new_name);
     int get_id();
     int get_sockfd();
@@ -21,7 +22,7 @@ public:
     in_port_t get_port();
     void welcome();
     std::vector<Cmd *> num_pipe_list;
-
+ 
 private:
     int id;
     std::string ip;
@@ -44,4 +45,5 @@ public:
     static void broadcast(const char * message, size_t len);
     static bool name_exist(std::string);
     static bool change_name(std::string old_name, std::string new_name);
+    static void remove(user *client);
 };

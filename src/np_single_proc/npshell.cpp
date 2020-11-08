@@ -83,6 +83,7 @@ int npshell_proc(int fd) {
             delete cmd;
             cmd = new Cmd();
         } else if (token == "exit") {
+            delete client;
             return 1;
         } else if (token == "who") {
             who(fd);
