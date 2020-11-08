@@ -22,6 +22,8 @@ public:
     in_port_t get_port();
     void welcome();
     std::vector<Cmd *> num_pipe_list;
+    void yell(std::string message);
+    void tell(int user_id, std::string message);
  
 private:
     int id;
@@ -42,6 +44,7 @@ public:
     static std::set<std::string> name_set;
     static void add(int ssock, std::string ip, in_port_t port);
     static user * find_by_fd(int fd);
+    static user * find_by_id(int id);
     static void broadcast(const char * message, size_t len);
     static bool name_exist(std::string);
     static bool change_name(std::string old_name, std::string new_name);

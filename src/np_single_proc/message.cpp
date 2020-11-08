@@ -47,3 +47,23 @@ std::string yell_msg(std::string name, std::string message) {
 
     return msg;
 }
+
+std::string tell_msg(std::string name, std::string message) {
+    std::string msg;
+    msg += "*** ";
+    msg += name;
+    msg += " told you ***:";
+    msg += message;
+    msg += "\n";
+
+    return msg;
+}
+
+std::string tell_fail_msg(int id) {
+    std::string msg;
+    msg = "*** Error: user #";
+    msg += std::to_string(id);
+    msg += " does not exist yet. ***";
+
+    return msg;
+}

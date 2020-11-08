@@ -7,5 +7,7 @@ std::string login_msg(std::string ip, std::string port);
 std::string change_name_msg(std::string name, std::string ip, std::string port);
 std::string logout_msg(std::string name);
 std::string yell_msg(std::string name, std::string message);
+std::string tell_msg(std::string name, std::string message);
+std::string tell_fail_msg(int id);
 
 #endif

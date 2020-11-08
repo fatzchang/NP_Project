@@ -35,40 +35,56 @@ void user::change_name(std::string new_name) {
 }
 
 int user::get_id() {
-    return this->id;
+    return id;
 }
 
 int user::get_sockfd() {
-    return this->fd;
+    return fd;
 }
 std::string user::get_ip() {
-    return this->ip;
+    return ip;
 }
 
 std::string user::get_path() {
-    return this->path;
+    return path;
 }
 
 void user::set_path(std::string new_path) {
-    this->path = new_path;
+    path = new_path;
 }
 
 in_port_t user::get_port() {
-    return this->port;
+    return port;
 }
 
 void user::welcome() {
     std::string msg = welcome_msg();
     msg += login_msg(this->ip, std::to_string(this->port));
     msg += "% ";
-    write(this->fd, msg.c_str(), msg.size());
+    write(fd, msg.c_str(), msg.size());
+}
+
+void user::yell(std::string message) {
+    std::string broadcast_msg = yell_msg(name, message);
+    ulist::broadcast(broadcast_msg.c_str(), broadcast_msg.size());
+}
+
+void user::tell(int user_id, std::string message) {
+    user *client = ulist::find_by_id(user_id);
+    if (client == NULL) {
+        std::cout << tell_fail_msg(user_id) << std::endl;
+    } else {
+        std::string msg = tell_msg(name, message);
+        write(client->get_sockfd(), msg.c_str(), msg.size());
+    }
 }
 
 user::~user() {
     ulist::remove(this);
-    std::string broadcast_msg = logout_msg(this->name);
+    std::string broadcast_msg = logout_msg(name);
     ulist::broadcast(broadcast_msg.c_str(), broadcast_msg.size());
 }
+
 
 
 // ulist
@@ -102,6 +118,15 @@ void ulist::add(int ssock, std::string ip, in_port_t port) {
 
 user * ulist::find_by_fd(int fd) {
     return fd_mapper.find(fd)->second;
+}
+
+user * ulist::find_by_id(int id) {
+    std::map<int, user *>::iterator it;
+    it = id_mapper.find(id);
+    if (it == id_mapper.end()) {
+        return NULL;
+    }
+    return it->second;
 }
 
 void ulist::broadcast(const char * message, size_t len) {

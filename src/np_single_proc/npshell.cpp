@@ -99,9 +99,16 @@ int npshell_proc(int fd) {
         } else if (token == "yell") {
             string msg;
             ss >> msg;
-            std::string broadcast_msg = yell_msg(client->name, msg);
-            ulist::broadcast(broadcast_msg.c_str(), broadcast_msg.size());
-
+            client->yell(msg);
+        } else if (token == "tell") {
+            int receiver;
+            string tmp, msg;
+            ss >> receiver;
+            while(ss >> tmp) {
+                msg += " ";
+                msg += tmp;
+            }
+            client->tell(receiver, msg);
         } else  {
             cmd->append(token);
         }
