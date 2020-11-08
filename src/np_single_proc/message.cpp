@@ -32,7 +32,7 @@ std::string logout_msg(std::string name) {
     std::string msg;
     msg = "*** User '";
     msg += name;
-    msg += "' left. ***";
+    msg += "' left. ***\n";
     
     return msg;
 }
