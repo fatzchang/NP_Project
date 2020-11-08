@@ -97,8 +97,11 @@ int npshell_proc(int fd) {
                 cerr << "missing arguments" << endl;
             }
         } else if (token == "yell") {
-            string msg;
-            ss >> msg;
+            string tmp, msg;
+            while(ss >> tmp) {
+                msg += " ";
+                msg += tmp;
+            }
             client->yell(msg);
         } else if (token == "tell") {
             int receiver;

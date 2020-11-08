@@ -41,7 +41,7 @@ std::string yell_msg(std::string name, std::string message) {
     std::string msg;
     msg += "*** ";
     msg += name;
-    msg += " yelled ***: ";
+    msg += " yelled ***:";
     msg += message;
     msg += "\n";
 
