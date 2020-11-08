@@ -153,7 +153,7 @@ void who(int my_fd) {
         body += to_string(u->get_port());
         body += "\t";
         if (u->get_sockfd() == my_fd) {
-            body += "<- me";
+            body += "<-me";
         }
         body += "\n";
     }

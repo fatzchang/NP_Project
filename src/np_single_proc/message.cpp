@@ -21,9 +21,9 @@ std::string change_name_msg(std::string name, std::string ip, std::string port) 
     msg += ip;
     msg += ":";
     msg += port;
-    msg += " is named ’";
+    msg += " is named '";
     msg += name;
-    msg += "’. ***\n";
+    msg += "'. ***\n";
 
     return msg;
 }
