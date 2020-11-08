@@ -1,3 +1,4 @@
+#include <arpa/inet.h>
 #include <string>
 #include <map>
 #include <set>
@@ -5,7 +6,7 @@
 
 class user {
 public:
-    user(int sockfd, int id, std::string ip);
+    user(int sockfd, int id, std::string ip, in_port_t port);
     std::string name;
     void change_name(std::string new_name);
 
@@ -14,6 +15,7 @@ public:
     std::string get_ip();
     std::string get_path();
     void set_path(std::string new_path);
+    in_port_t get_port();
 
     void welcome();
     
@@ -22,7 +24,9 @@ private:
     int id;
     std::string ip;
     std::string path; // default: bin:.
+    in_port_t port;
     int fd;
+    
 };
 
 class ulist{
@@ -33,7 +37,9 @@ public:
     static std::map<int , user *> fd_mapper;
     static std::map<int , user *> id_mapper;
     static std::set<std::string> name_set;
-    static void add(int ssock, std::string ip);
+    static void add(int ssock, std::string ip, in_port_t port);
     static user * find_by_fd(int fd);
     static void broadcast(const char * message, size_t len);
+    static bool name_exist(std::string);
+    static bool change_name(std::string old_name, std::string new_name);
 };

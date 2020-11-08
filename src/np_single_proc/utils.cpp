@@ -149,6 +149,8 @@ void who(int my_fd) {
         body += u->name;
         body += "\t";
         body += u->get_ip();
+        body += ":";
+        body += to_string(u->get_port());
         body += "\t";
         if (u->get_sockfd() == my_fd) {
             body += "<- me";

@@ -1,21 +1,45 @@
 #include "user.h"
 #include <iostream>
 #include <unistd.h>
+#include <arpa/inet.h>
 
 
-user::user(int sockfd, int user_id, std::string ip_addr) {
+user::user(int sockfd, int user_id, std::string ip_addr, in_port_t in_port) {
     fd = sockfd;
     ip = ip_addr;
     id = user_id;
+    port = in_port;
 
     path = "bin:.";
-    name = "(No name)";
+    name = "(no name)";
 }
 
 
 // TODO: check exist
 void user::change_name(std::string new_name) {
-    name = new_name;
+    if (name != new_name) {
+        if (!ulist::change_name(name, new_name)) {
+            std::string err_msg = "*** User ’";
+            err_msg += new_name;
+            err_msg += "’ already exists. ***\n";
+            write(this->fd, err_msg.c_str(), err_msg.size());
+            return;
+        }
+
+        name = new_name;
+    }
+
+    std::string broadcast_msg;
+    broadcast_msg = "*** User from ";
+    broadcast_msg += this->ip;
+    broadcast_msg += ":";
+    broadcast_msg += std::to_string(this->port);
+    broadcast_msg += " is named ’";
+    broadcast_msg += new_name;
+    broadcast_msg += "’. ***\n";
+    
+
+    ulist::broadcast(broadcast_msg.c_str(), broadcast_msg.size());  
 }
 
 int user::get_id() {
@@ -37,10 +61,15 @@ void user::set_path(std::string new_path) {
     this->path = new_path;
 }
 
+in_port_t user::get_port() {
+    return this->port;
+}
+
 void user::welcome() {
     char welcome_msg[] = "***************************************\n** Welcome to the information server **\n***************************************\n% ";
     write(this->fd, welcome_msg, sizeof(welcome_msg));
 }
+
 
 // ulist
 std::queue<int> ulist::id_queue;
@@ -49,7 +78,7 @@ std::set<std::string> ulist::name_set;
 std::map<int , user *> ulist::fd_mapper;
 std::map<int , user *> ulist::id_mapper;
 
-void ulist::add(int ssock, std::string ip) {
+void ulist::add(int ssock, std::string ip, in_port_t port) {
     int client_id;
     if (id_queue.empty()) {
         client_id = max_id;
@@ -58,18 +87,23 @@ void ulist::add(int ssock, std::string ip) {
         client_id = id_queue.front();
         id_queue.pop();
     }
-    user *client = new user(ssock, client_id, ip);
+    user *client = new user(ssock, client_id, ip, port);
     client->welcome();
-
-    std::string login_broadcast = "*** User ’(no name)’ entered from ";
-    login_broadcast += client->get_ip();
-    login_broadcast += ". ***";
-    broadcast(login_broadcast.c_str(), login_broadcast.size());
 
     // add to list
     name_set.insert(client->name);
     fd_mapper.insert(std::pair<int, user *>(client->get_sockfd(), client));
     id_mapper.insert(std::pair<int, user *>(client->get_id(), client));
+
+    // broadcast (include self)
+    std::string login_broadcast = "*** User ’(no name)’ entered from ";
+    login_broadcast += client->get_ip();
+    login_broadcast += ":";
+    login_broadcast += std::to_string(client->get_port());
+    login_broadcast += ". ***\n";
+    broadcast(login_broadcast.c_str(), login_broadcast.size());
+
+    
 }
 
 user * ulist::find_by_fd(int fd) {
@@ -81,4 +115,28 @@ void ulist::broadcast(const char * message, size_t len) {
     for (it = fd_mapper.begin(); it != fd_mapper.end(); it++) {
         write(it->first, message, len);
     }
+}
+
+bool ulist::name_exist(std::string name) {
+    std::set<std::string>::iterator it;
+    it = name_set.find(name);
+
+    return it != name_set.end();
+}
+bool ulist::change_name(std::string old_name, std::string new_name) {
+    if (name_exist(new_name)) {
+        return false;
+    }
+
+    // remove old name
+    std::set<std::string>::iterator it;
+    it = name_set.find(old_name);
+    if (it != name_set.end()) {
+        name_set.erase(it);
+    }
+
+    // insert new name
+    name_set.insert(new_name);
+
+    return true;
 }

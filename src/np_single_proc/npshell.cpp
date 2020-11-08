@@ -85,8 +85,16 @@ int npshell_proc(int fd) {
             cmd = new Cmd();
         } else if (token == "exit") {
             return 1;
-        } else if(token == "who") {
+        } else if (token == "who") {
             who(fd);
+        }  else if (token == "name") {
+            string name;
+            ss >> name;
+            if (name.size()) {
+                client->change_name(name);
+            }else {
+                cerr << "missing arguments" << endl;
+            }
         } else  {
             cmd->append(token);
         }
