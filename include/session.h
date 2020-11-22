@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <boost/asio.hpp>
+#include <boost/array.hpp>
 
 
 using namespace boost::asio;
@@ -15,11 +16,12 @@ public:
 
 private:
     ip::tcp::socket socket_;
-    char data_[DATA_MAX_LENGTH];
+    boost::array<char, DATA_MAX_LENGTH> data_;
     
     void do_read();
     void do_write(size_t length);
 };
+
 
 
 

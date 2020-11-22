@@ -9,11 +9,12 @@ OBJS=${patsubst ${SRC_DIR}/%.cpp, ${BUILD_DIR}/%.o, ${SRCS}}
 
 part1: ${OBJS}
 	${CPP} ${OBJS} -o ${EXEC} -lboost_system -lpthread
+	@echo done
 
 build/%.o: ${SRC_DIR}/%.cpp
-	echo 1
+	@echo compile $< to ${@D} ...
 	@mkdir -p ${@D}
-	${CPP} -c $< -o $@ -I${INCL_DIR} -std=c++11
+	@${CPP} -c $< -o $@ -I${INCL_DIR} -std=c++11
 
 
 clean:
