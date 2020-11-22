@@ -20,6 +20,7 @@ private:
     boost::array<char, DATA_MAX_LENGTH> data_;
     std::stringstream full_data_;
     bool is_first_line;
+    std::string cgi;
     
     void do_read();
     void parse(size_t length);
