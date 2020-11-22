@@ -36,7 +36,6 @@ void server::do_accept() {
                 ioc.notify_fork(boost::asio::io_context::fork_child);
                 acceptor_.close();
                 signal_.cancel();
-
                 std::make_shared<session>(std::move(socket))->start();
             } else {
                 socket.close();

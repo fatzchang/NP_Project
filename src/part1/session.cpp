@@ -1,37 +1,84 @@
 #include "session.h"
 #include <boost/algorithm/string.hpp>
 
+#include <iostream>
+#include <vector>
 
 session::session(ip::tcp::socket socket)
- : socket_(std::move(socket)) {
+ : socket_(std::move(socket)),
+   is_first_line(true) 
+{
 
- }
+}
 
- void session::start() {
-     // set env
-     do_read();
- }
+void session::start() {
+    // set env
+    do_read();
+}
 
- void session::do_read() {
-     auto self(shared_from_this());
-     socket_.async_read_some(
-         buffer(data_),
-         [this, self](boost::system::error_code ec, size_t length){
-             if (!ec) {
-                 do_write(length);
-             }
-         }
-     );
- }
+void session::do_read() {
+    auto self(shared_from_this());
+    socket_.async_read_some(
+        buffer(data_),
+        [this, self](boost::system::error_code ec, size_t length){
+            if (!ec) {
+                parse(length);
+            }
+        }
+    );
+}
 
- void session::do_write(size_t length) {
-     auto self(shared_from_this());
-     async_write(
-         socket_, buffer(data_, length),
-         [this, self](boost::system::error_code ec, size_t length){
-             if (!ec && length == DATA_MAX_LENGTH) {
-                 do_read();
-             }
-         }
-     );
- }
+void session::parse(size_t length) {
+    full_data_ << data_.c_array();
+    std::string line;
+    std::string::size_type index;
+    while (std::getline(full_data_, line) && line != "\r") {
+        if (is_first_line) {
+            std::vector<std::string> splitVec;
+            boost::algorithm::split(splitVec, line, boost::algorithm::is_any_of(" "), boost::algorithm::token_compress_on);
+            setenv("REQUIEST_METHOD", (splitVec.at(0)).c_str(), 1); // GET
+            setenv("REQUEST_URI", (splitVec.at(1)).c_str(), 1);
+            setenv("SERVER_PROTOCOL", (splitVec.at(2)).c_str(), 1); // HTTP 1.1 ??
+            // query string
+        }
+        
+        index = line.find(':', 0);
+        if(index != std::string::npos) {
+            std::string key = boost::algorithm::trim_copy(line.substr(0, index));
+            std::string value = boost::algorithm::trim_copy(line.substr(index + 1));
+
+            if (key == "Host") {
+                setenv("HTTP_HOST", value.c_str(), 1);
+            }
+        }
+
+        is_first_line = false;
+    }
+
+    if (length == DATA_MAX_LENGTH) {
+        do_read();
+    } else {
+        boost::asio::ip::tcp::endpoint server_endpoint(socket_.local_endpoint());
+        boost::asio::ip::tcp::endpoint remote_endpoint(socket_.remote_endpoint());
+
+        setenv("SERVER_ADDR", server_endpoint.address().to_string().c_str(), 1);
+        setenv("REMOTE_PORT", std::to_string(server_endpoint.port()).c_str(), 1);
+
+        setenv("REMOTE_ADDR", remote_endpoint.address().to_string().c_str(), 1);
+        setenv("REMOTE_PORT", std::to_string(remote_endpoint.port()).c_str(), 1);
+        
+
+        close(0);
+        dup(socket_.native_handle());
+        close(1);
+        dup(socket_.native_handle());
+
+        socket_.close();
+
+        // execlp("./a", "a", NULL);
+        // execute
+
+        std::cerr << "failed" << std::endl;
+        exit(0);
+    }
+}

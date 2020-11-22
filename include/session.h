@@ -5,6 +5,7 @@
 #include <memory>
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
+#include <sstream>
 
 
 using namespace boost::asio;
@@ -17,9 +18,11 @@ public:
 private:
     ip::tcp::socket socket_;
     boost::array<char, DATA_MAX_LENGTH> data_;
+    std::stringstream full_data_;
+    bool is_first_line;
     
     void do_read();
-    void do_write(size_t length);
+    void parse(size_t length);
 };
 
 
