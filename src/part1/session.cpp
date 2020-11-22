@@ -1,4 +1,6 @@
 #include "session.h"
+#include <boost/algorithm/string.hpp>
+
 
 session::session(ip::tcp::socket socket)
  : socket_(std::move(socket)) {
@@ -27,7 +29,7 @@ session::session(ip::tcp::socket socket)
      async_write(
          socket_, buffer(data_, length),
          [this, self](boost::system::error_code ec, size_t length){
-             if (!ec) {
+             if (!ec && length == DATA_MAX_LENGTH) {
                  do_read();
              }
          }
