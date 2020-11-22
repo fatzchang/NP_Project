@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <stdio.h>
 
 session::session(ip::tcp::socket socket)
  : socket_(std::move(socket)),
@@ -36,10 +37,18 @@ void session::parse(size_t length) {
         if (is_first_line) {
             std::vector<std::string> splitVec;
             boost::algorithm::split(splitVec, line, boost::algorithm::is_any_of(" "), boost::algorithm::token_compress_on);
+            std::string request_uri = splitVec.at(1);
+
             setenv("REQUIEST_METHOD", (splitVec.at(0)).c_str(), 1); // GET
-            setenv("REQUEST_URI", (splitVec.at(1)).c_str(), 1);
+            setenv("REQUEST_URI", request_uri.c_str(), 1);
             setenv("SERVER_PROTOCOL", (splitVec.at(2)).c_str(), 1); // HTTP 1.1 ??
             // query string
+            
+            index = request_uri.find('?', 0);
+            std::string query_string = boost::algorithm::trim_copy(request_uri.substr(index + 1));
+            std::string target = boost::algorithm::trim_left_copy_if(request_uri, boost::algorithm::is_any_of("/"));
+            setenv("QUERY_STRING", query_string.c_str(), 1); // HTTP 1.1 ??
+            setenv("target", target.c_str(), 1);
         }
         
         index = line.find(':', 0);
@@ -75,13 +84,11 @@ void session::parse(size_t length) {
 
         socket_.close();
 
-        char *argv[]={"panel.cgi", NULL};
-        char *envp[]={NULL};
-
-        execve("./panel.cgi", argv, envp);
+        char* target = getenv("target");
         // execute
-
-        std::cerr << "failed" << std::endl;
+        execlp(target, target, NULL);
+        std::perror("failed");
+        // std::cerr << "failed" << std::endl;
         exit(0);
     }
 }
