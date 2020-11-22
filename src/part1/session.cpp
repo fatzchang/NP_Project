@@ -75,7 +75,10 @@ void session::parse(size_t length) {
 
         socket_.close();
 
-        // execlp("./a", "a", NULL);
+        char *argv[]={"panel.cgi", NULL};
+        char *envp[]={NULL};
+
+        execve("./panel.cgi", argv, envp);
         // execute
 
         std::cerr << "failed" << std::endl;
