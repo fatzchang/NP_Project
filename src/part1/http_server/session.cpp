@@ -48,7 +48,10 @@ void session::parse(size_t length) {
             std::string query_string = boost::algorithm::trim_copy(request_uri.substr(index + 1));
             setenv("QUERY_STRING", query_string.c_str(), 1); // HTTP 1.1 ??
             
-            cgi = boost::algorithm::trim_left_copy_if(request_uri, boost::algorithm::is_any_of("/"));
+            cgi = boost::algorithm::trim_left_copy_if(
+                request_uri.substr(0, index), 
+                boost::algorithm::is_any_of("/")
+            );
         }
         
         index = line.find(':', 0);
@@ -87,7 +90,7 @@ void session::parse(size_t length) {
         // execute
         execlp((std::string("./") + cgi).c_str(), cgi.c_str(), NULL);
         std::perror("failed");
-        // std::cerr << "failed" << std::endl;
+        std::cerr << cgi << std::endl;
         exit(0);
     }
 }
