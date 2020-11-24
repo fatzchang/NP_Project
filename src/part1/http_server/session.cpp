@@ -39,7 +39,7 @@ void session::parse(size_t length) {
             boost::algorithm::split(splitVec, line, boost::algorithm::is_any_of(" "), boost::algorithm::token_compress_on);
             std::string request_uri = splitVec.at(1);
 
-            setenv("REQUIEST_METHOD", (splitVec.at(0)).c_str(), 1); // GET
+            setenv("REQUEST_METHOD", (splitVec.at(0)).c_str(), 1); // GET
             setenv("REQUEST_URI", request_uri.c_str(), 1);
             setenv("SERVER_PROTOCOL", (splitVec.at(2)).c_str(), 1); // HTTP 1.1 ??
             // query string
@@ -74,7 +74,7 @@ void session::parse(size_t length) {
         boost::asio::ip::tcp::endpoint remote_endpoint(socket_.remote_endpoint());
 
         setenv("SERVER_ADDR", server_endpoint.address().to_string().c_str(), 1);
-        setenv("REMOTE_PORT", std::to_string(server_endpoint.port()).c_str(), 1);
+        setenv("SERVER_PORT", std::to_string(server_endpoint.port()).c_str(), 1);
 
         setenv("REMOTE_ADDR", remote_endpoint.address().to_string().c_str(), 1);
         setenv("REMOTE_PORT", std::to_string(remote_endpoint.port()).c_str(), 1);
