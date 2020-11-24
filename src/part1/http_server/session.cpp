@@ -87,6 +87,10 @@ void session::parse(size_t length) {
 
         socket_.close();
         
+
+        std::cout << "HTTP/1.0 200 OK\r\n";
+        std::cout << "Content-type: text/html\r\n\r\n";
+
         // execute
         execlp((std::string("./") + cgi).c_str(), cgi.c_str(), NULL);
         std::perror("failed");
