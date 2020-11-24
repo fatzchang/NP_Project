@@ -38,6 +38,8 @@ void insert(int id, std::string text) {
     script += "<script>";
     script += "document.getElementById(\"target_" + std::to_string(id) + "\")";
     script += ".insertAdjacentHTML(\"beforeend\", ";
-    script += "\"<div>" + text + "</div>\"";
+    script += "\"<div>" + text + "</div>\");";
     script += "</script>";
+
+    std::cout << script << std::endl;
 }
