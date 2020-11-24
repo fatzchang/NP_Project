@@ -89,7 +89,7 @@ void session::parse(size_t length) {
         
 
         std::cout << "HTTP/1.0 200 OK\r\n";
-        std::cout << "Content-type: text/html\r\n\r\n";
+        std::cout << "Content-type: text/html\r\n\r\n" << std::endl;
 
         // execute
         execlp((std::string("./") + cgi).c_str(), cgi.c_str(), NULL);
