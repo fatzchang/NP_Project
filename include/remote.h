@@ -1,6 +1,7 @@
 #ifndef __REMOTE_H
 #define __REMOTE_H
 
+#include "session.h"
 #include <string>
 #include <boost/asio.hpp>
 
@@ -22,6 +23,10 @@ private:
     std::string host_;
     std::string file_;
     boost::asio::ip::tcp::socket socket_;
+    char data_[DATA_MAX_LENGTH];
+
+    void do_read_socket();
+    void do_read_file();
 };
 
 #endif

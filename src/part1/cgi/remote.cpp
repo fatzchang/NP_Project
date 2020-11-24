@@ -34,6 +34,16 @@ int remote::id() {
 void remote::connect(boost::asio::io_context &ioc) {
     boost::asio::ip::tcp::resolver resolver(ioc);
     boost::asio::ip::tcp::resolver::iterator resolve_it = resolver.resolve(host(), std::to_string(port()));
-    // std::cout << resolve_it->endpoint().address() << std::endl;
     socket_.connect(resolve_it->endpoint());
+
+    do_read_socket();
+}
+
+void remote::do_read_socket() {
+    socket_.async_read_some(
+        boost::asio::buffer(data_, DATA_MAX_LENGTH),
+        [this](boost::system::error_code ec, size_t length){
+            std::cout << data_ << std::endl;
+        }
+    );
 }

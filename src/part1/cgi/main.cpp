@@ -63,10 +63,7 @@ void link_remote(std::map<int, remote*> &remote_list) {
     
 
     for (auto it = remote_list.begin(); it != remote_list.end(); it++) {
-
         // it->second.connect(io_context);
-        
-
         // boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), )
     }
 }
