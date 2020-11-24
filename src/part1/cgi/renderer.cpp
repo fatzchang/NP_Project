@@ -17,7 +17,7 @@ void render(std::map<int, remote*> &remote_list) {
     
     for (auto it = remote_list.begin(); it != remote_list.end(); it++) {
 
-    page +=                 "<div class=\"col\" id=\"" + it->second->file() + "\">";
+    page +=                 "<div class=\"col\" id=\"" + std::to_string(it->second->id()) + "\">";
     page +=                     it->second->host() + ":" + std::to_string(it->second->port());
     page +=                 "</div>";
         

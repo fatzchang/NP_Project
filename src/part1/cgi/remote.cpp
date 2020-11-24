@@ -27,6 +27,10 @@ void remote::file(std::string file) {
     file_ = file;
 }
 
+int remote::id() {
+    return id_;
+}
+
 void remote::connect(boost::asio::io_context &ioc) {
     boost::asio::ip::tcp::resolver resolver(ioc);
     boost::asio::ip::tcp::resolver::iterator resolve_it = resolver.resolve(host(), std::to_string(port()));

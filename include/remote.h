@@ -9,12 +9,13 @@ public:
     remote(int index, boost::asio::io_context &ioc);
     int port();
     void port(int port);
-    void connect(boost::asio::io_context &ioc);
-
     std::string host();
     void host(std::string host);
     std::string file();
     void file(std::string filename);
+    int id();
+
+    void connect(boost::asio::io_context &ioc);
 private:
     int id_;
     int port_;

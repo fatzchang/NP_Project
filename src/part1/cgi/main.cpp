@@ -36,7 +36,7 @@ int main() {
             std::string value = it->substr(index + 1);
             if (key == "h") {
                 r->host(value);
-            } else if (key == "port") {
+            } else if (key == "p") {
                 r->port(stoi(value));
             } else if (key == "f") {
                 r->file(value);
