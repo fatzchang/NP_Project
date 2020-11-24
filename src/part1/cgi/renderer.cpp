@@ -17,7 +17,7 @@ void render(std::map<int, remote*> &remote_list) {
     
     for (auto it = remote_list.begin(); it != remote_list.end(); it++) {
 
-    page +=                 "<div class=\"col\" id=\"" + std::to_string(it->second->id()) + "\">";
+    page +=                 "<div class=\"col\" id=\"target_" + std::to_string(it->second->id()) + "\">";
     page +=                     it->second->host() + ":" + std::to_string(it->second->port());
     page +=                 "</div>";
         
@@ -33,9 +33,11 @@ void render(std::map<int, remote*> &remote_list) {
 }
 
 
-void inser(int id, std::string text) {
+void insert(int id, std::string text) {
     std::string script;
     script += "<script>";
-    script += "document.getElementById(" + std::to_string(id) + ")";
+    script += "document.getElementById(\"target_" + std::to_string(id) + "\")";
+    script += ".insertAdjacentHTML(\"beforeend\", ";
+    script += "\"<div>" + text + "</div>\"";
     script += "</script>";
 }

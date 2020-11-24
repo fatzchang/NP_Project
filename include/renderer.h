@@ -5,5 +5,6 @@
 #include <map>
 
 void render(std::map<int, remote*> &remote_list);
+void insert(int id, std::string text);
 
 #endif
