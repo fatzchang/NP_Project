@@ -17,8 +17,8 @@ void render(std::map<int, remote*> &remote_list) {
     
     for (auto it = remote_list.begin(); it != remote_list.end(); it++) {
 
-    page +=                 "<div class=\"col\">";
-    page +=                     it->second->host();
+    page +=                 "<div class=\"col\" id=\"" + it->second->file() + "\">";
+    page +=                     it->second->host() + ":" + std::to_string(it->second->port());
     page +=                 "</div>";
         
     }
@@ -29,6 +29,13 @@ void render(std::map<int, remote*> &remote_list) {
 
     page +=     "</body>";
     page += "</html>";
-
     std::cout << page << std::endl;
+}
+
+
+void inser(int id, std::string text) {
+    std::string script;
+    script += "<script>";
+    script += "document.getElementById(" + std::to_string(id) + ")";
+    script += "</script>";
 }
