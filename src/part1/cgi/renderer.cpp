@@ -4,6 +4,7 @@
 
 void render(std::map<int, remote*> &remote_list) {
     std::string page;
+    page += "Content-type: text/html\r\n\r\n";
     page += "<!DOCTYPE html>";
     page += "<html lang=\"en\"><head><meta charset=\"UTF-8\" /><title>NP Project 3 Sample Console</title>";
     page +=     "<head>";
