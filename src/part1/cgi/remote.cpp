@@ -2,7 +2,8 @@
 #include <string>
 #include <iostream>
 
-remote::remote(int id, boost::asio::io_context &ioc) : id_(id), socket_(ioc) {}
+remote::remote(int id, boost::asio::io_context &ioc) 
+: id_(id), socket_(ioc), ioc_(ioc) {}
 
 int remote::port() {
     return port_;
@@ -31,8 +32,8 @@ int remote::id() {
     return id_;
 }
 
-void remote::connect(boost::asio::io_context &ioc) {
-    boost::asio::ip::tcp::resolver resolver(ioc);
+void remote::connect() {
+    boost::asio::ip::tcp::resolver resolver(ioc_);
     boost::asio::ip::tcp::resolver::iterator resolve_it = resolver.resolve(host(), std::to_string(port()));
     socket_.connect(resolve_it->endpoint());
 

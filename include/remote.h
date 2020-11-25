@@ -16,13 +16,14 @@ public:
     void file(std::string filename);
     int id();
 
-    void connect(boost::asio::io_context &ioc);
+    void connect();
 private:
     int id_;
     int port_;
     std::string host_;
     std::string file_;
     boost::asio::ip::tcp::socket socket_;
+    boost::asio::io_context &ioc_;
     char data_[DATA_MAX_LENGTH];
 
     void do_read_socket();
