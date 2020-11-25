@@ -1,8 +1,10 @@
 #include <map>
 #include <iostream>
 #include "remote.h"
+#include <memory>
+#include <sstream>
 
-void render(std::map<int, remote*> &remote_list) {
+void render(std::map<int, std::shared_ptr<remote>> &remote_list) {
     std::string page;
     page += "Content-type: text/html\r\n\r\n";
     page += "<!DOCTYPE html>";
@@ -19,7 +21,7 @@ void render(std::map<int, remote*> &remote_list) {
     for (auto it = remote_list.begin(); it != remote_list.end(); it++) {
 
     page +=                 "<div class=\"col\" id=\"target_" + std::to_string(it->second->id()) + "\">";
-    page +=                     it->second->host() + ":" + std::to_string(it->second->port());
+    page +=                     "<div>" + it->second->host() + ":" + std::to_string(it->second->port()) + "</div>";
     page +=                 "</div>";
         
     }
@@ -35,11 +37,17 @@ void render(std::map<int, remote*> &remote_list) {
 
 
 void insert(int id, std::string text) {
+    std::stringstream ss(text);
+    std::string tmp;
     std::string script;
     script += "<script>";
     script += "document.getElementById(\"target_" + std::to_string(id) + "\")";
-    script += ".insertAdjacentHTML(\"beforeend\", ";
-    script += "\"<div>" + text + "</div>\");";
+    script += ".insertAdjacentHTML(\"beforeend\", `<span>";
+    while(getline(ss, tmp)) {
+        script += tmp;
+        script += "<br>";
+    }
+    script += "</span>`);";
     script += "</script>";
 
     std::cout << script << std::endl;

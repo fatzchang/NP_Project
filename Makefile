@@ -2,6 +2,7 @@ CPP=g++
 INCL_DIR=include
 INCLS=${wildcard ${INCL_DIR}/*.h}
 
+BUILD_DIR=build;
 #part 1
 SERVER_EXEC=http_server
 SERVER_SRC_DIR=src/part1/http_server
@@ -40,5 +41,5 @@ ${CGI_BUILD_DIR}/%.o: ${CGI_SRC_DIR}/%.cpp
 
 
 clean:
-	@rm -f ${SERVER_EXEC}
-	@rm -rf ${SERVER_BUILD_DIR}
+	@rm -f ${SERVER_EXEC} ${CGI_EXEC}
+	@rm -rf ${BUILD_DIR}
