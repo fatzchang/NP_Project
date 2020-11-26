@@ -73,18 +73,18 @@ void remote::do_send() {
     if (!f_s_.is_open()) {
         f_s_.open(file_);
     }
-    getline(f_s_, tmp_from_file_);
-    tmp_from_file_ += "\n";
-    insert(id_, tmp_from_file_);
+    if (getline(f_s_, tmp_from_file_)) {
+        tmp_from_file_ += "\n";
+        insert(id_, tmp_from_file_);
 
-    boost::asio::async_write(socket_, buffer(tmp_from_file_), 
-        [this, self](boost::system::error_code ec, size_t length) {
-            if (ec) {
-                throw boost::system::system_error(ec);
+        boost::asio::async_write(socket_, buffer(tmp_from_file_), 
+            [this, self](boost::system::error_code ec, size_t length) {
+                if (ec) {
+                    throw boost::system::system_error(ec);
+                }
+                do_read_socket();
             }
-            do_read_socket();
-        }
-    );
-
-
+        );
+    }
+    
 }
