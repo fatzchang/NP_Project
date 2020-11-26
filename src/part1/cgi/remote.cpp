@@ -51,7 +51,9 @@ void remote::do_read_socket() {
         boost::asio::buffer(data_),
         [this, self](boost::system::error_code ec, size_t length){
             if (ec) {
-                throw boost::system::system_error(ec);
+                std::cerr << boost::system::system_error(ec).what() << std::endl;
+                socket_.close();
+                return;
             }
 
             insert(id_, data_.data());
@@ -71,7 +73,7 @@ void remote::do_read_socket() {
 void remote::do_send() {
     auto self(shared_from_this());
     if (!f_s_.is_open()) {
-        f_s_.open(file_);
+        f_s_.open("./test_case/" + file_);
     }
     if (getline(f_s_, tmp_from_file_)) {
         tmp_from_file_ += "\n";
@@ -79,12 +81,11 @@ void remote::do_send() {
 
         boost::asio::async_write(socket_, buffer(tmp_from_file_), 
             [this, self](boost::system::error_code ec, size_t length) {
-                if (ec) {
-                    throw boost::system::system_error(ec);
-                }
                 do_read_socket();
+                if (ec) {
+                    std::cerr << boost::system::system_error(ec).what() << std::endl;
+                }
             }
         );
     }
-    
 }
