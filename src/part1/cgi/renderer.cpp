@@ -8,7 +8,7 @@ void render(std::map<int, std::shared_ptr<remote>> &remote_list) {
     std::string page;
     page += "Content-type: text/html\r\n\r\n";
     page += "<!DOCTYPE html>";
-    page += "<html lang=\"en\"><head><meta charset=\"UTF-8\" /><title>NP Project 3 Sample Console</title>";
+    page += "<html lang=\"en\">";
     page +=     "<head>";
     page +=         "<meta charset=\"UTF-8\" />";
     page +=         "<title>NP Project 3 Sample Console</title>";

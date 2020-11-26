@@ -29,12 +29,12 @@ cgi: ${CGI_OBJS}
 	${CPP} ${CGI_OBJS} -o ${CGI_EXEC} -lboost_system -lpthread
 	@echo done
 
-${SERVER_BUILD_DIR}/%.o: ${SERVER_SRC_DIR}/%.cpp
+${SERVER_BUILD_DIR}/%.o: ${SERVER_SRC_DIR}/%.cpp ${INCLS}
 	@echo compile $< to ${@D} ...
 	@mkdir -p ${@D}
 	@${CPP} -c $< -o $@ -I${INCL_DIR} -std=c++11
 
-${CGI_BUILD_DIR}/%.o: ${CGI_SRC_DIR}/%.cpp
+${CGI_BUILD_DIR}/%.o: ${CGI_SRC_DIR}/%.cpp ${INCLS}
 	@echo compile $< to ${@D} ...
 	@mkdir -p ${@D}
 	@${CPP} -c $< -o $@ -I${INCL_DIR} -std=c++11
