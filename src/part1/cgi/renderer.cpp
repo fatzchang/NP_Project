@@ -45,7 +45,10 @@ void insert(int id, std::string text) {
     script += ".insertAdjacentHTML(\"beforeend\", `<span>";
     while(getline(ss, tmp)) {
         script += tmp;
-        script += "<br>";
+        if (tmp != "% ") {
+            script += "<br>";
+
+        }
     }
     script += "</span>`);";
     script += "</script>";

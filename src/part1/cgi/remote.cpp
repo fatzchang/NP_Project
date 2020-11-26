@@ -47,13 +47,16 @@ void remote::connect() {
 
 void remote::do_read_socket() {
     auto self(shared_from_this());
-    data_.assign(0);
     socket_.async_read_some(
         boost::asio::buffer(data_),
         [this, self](boost::system::error_code ec, size_t length){
+            if (ec) {
+                throw boost::system::system_error(ec);
+            }
+
             insert(id_, data_.data());
             std::string d(data_.data());
-            
+            data_.assign(0);
 
             if (d.find("%") != std::string::npos) {
                 do_send();
@@ -71,13 +74,17 @@ void remote::do_send() {
         f_s_.open(file_);
     }
     getline(f_s_, tmp_from_file_);
+    tmp_from_file_ += "\n";
     insert(id_, tmp_from_file_);
-    if (tmp_from_file_ != "exit") {
-        boost::asio::async_write(socket_, buffer(tmp_from_file_), 
-            [this, self](boost::system::error_code ec, size_t length) {
-                do_read_socket();
+
+    boost::asio::async_write(socket_, buffer(tmp_from_file_), 
+        [this, self](boost::system::error_code ec, size_t length) {
+            if (ec) {
+                throw boost::system::system_error(ec);
             }
-        );
-    }
+            do_read_socket();
+        }
+    );
+
 
 }
