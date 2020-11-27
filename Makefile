@@ -1,19 +1,19 @@
 CPP=g++
-INCL_DIR=include
-INCLS=${wildcard ${INCL_DIR}/*.h}
+PART1_INCL_DIR=part1/include
+INCLS=${wildcard ${PART1_INCL_DIR}/*.h}
 
 BUILD_DIR=build;
 #part 1
 SERVER_EXEC=http_server
-SERVER_SRC_DIR=src/part1/http_server
+SERVER_SRC_DIR=part1/src/http_server
 SERVER_SRCS=${wildcard ${SERVER_SRC_DIR}/*.cpp}
-SERVER_BUILD_DIR=build/part1/http_server
+SERVER_BUILD_DIR=part1/build/http_server
 SERVER_OBJS=${patsubst ${SERVER_SRC_DIR}/%.cpp, ${SERVER_BUILD_DIR}/%.o, ${SERVER_SRCS}}
 
 CGI_EXEC=console.cgi
-CGI_SRC_DIR=src/part1/cgi
+CGI_SRC_DIR=part1/src/cgi
 CGI_SRCS=${wildcard ${CGI_SRC_DIR}/*.cpp}
-CGI_BUILD_DIR=build/part1/cgi
+CGI_BUILD_DIR=part1/build/cgi
 CGI_OBJS=${patsubst ${CGI_SRC_DIR}/%.cpp, ${CGI_BUILD_DIR}/%.o, ${CGI_SRCS}}
 
 part1: http_server_unix cgi
@@ -32,12 +32,12 @@ cgi: ${CGI_OBJS}
 ${SERVER_BUILD_DIR}/%.o: ${SERVER_SRC_DIR}/%.cpp ${INCLS}
 	@echo compile $< to ${@D} ...
 	@mkdir -p ${@D}
-	@${CPP} -c $< -o $@ -I${INCL_DIR} -std=c++11
+	@${CPP} -c $< -o $@ -I${PART1_INCL_DIR} -std=c++11
 
 ${CGI_BUILD_DIR}/%.o: ${CGI_SRC_DIR}/%.cpp ${INCLS}
 	@echo compile $< to ${@D} ...
 	@mkdir -p ${@D}
-	@${CPP} -c $< -o $@ -I${INCL_DIR} -std=c++11
+	@${CPP} -c $< -o $@ -I${PART1_INCL_DIR} -std=c++11
 
 
 clean:
