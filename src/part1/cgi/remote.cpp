@@ -59,7 +59,14 @@ void remote::do_read_socket() {
             
             std::string data_string(data_.data());
             data_string = data_string.substr(0, length);
-            insert(id_, data_string);
+            cat_data_ += data_string;
+
+
+            if (length < DATA_MAX_LENGTH && length > 1) {
+
+                insert(id_, cat_data_);
+                cat_data_.clear();
+            }
 
             if (data_string.find("%") != std::string::npos) {
                 do_send();
@@ -76,6 +83,7 @@ void remote::do_send() {
     if (!f_s_.is_open()) {
         f_s_.open("./test_case/" + file_);
     }
+
     if (getline(f_s_, tmp_from_file_)) {
         tmp_from_file_ += "\n";
         insert(id_, tmp_from_file_);

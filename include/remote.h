@@ -28,6 +28,7 @@ private:
     boost::asio::ip::tcp::socket socket_;
     boost::asio::io_context &ioc_;
     boost::array<char, DATA_MAX_LENGTH> data_;
+    std::string cat_data_;
 
 
     std::ifstream f_s_;
