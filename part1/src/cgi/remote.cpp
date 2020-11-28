@@ -70,9 +70,9 @@ void remote::do_read_socket() {
 
             if (data_string.find("%") != std::string::npos) {
                 do_send();
-            } else {
-                do_read_socket();
             }
+
+            do_read_socket();
         }
     );
 }
@@ -90,7 +90,7 @@ void remote::do_send() {
 
         boost::asio::async_write(socket_, buffer(tmp_from_file_), 
             [this, self](boost::system::error_code ec, size_t length) {
-                do_read_socket();
+                // do_read_socket();
                 if (ec) {
                     std::cerr << boost::system::system_error(ec).what() << std::endl;
                 }
