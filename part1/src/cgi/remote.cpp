@@ -58,7 +58,7 @@ void remote::do_read_socket() {
             }
             
             std::string data_string(data_.data());
-            // data_string = data_string.substr(0, length);
+            data_string = data_string.substr(0, length);
             cat_data_ += data_string;
 
             if (length < DATA_MAX_LENGTH && ((cat_data_.back() == '\n') || data_string.find("%") != std::string::npos)) {
