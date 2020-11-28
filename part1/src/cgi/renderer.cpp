@@ -44,14 +44,11 @@ void insert(int id, std::string text) {
     script += "document.getElementById(\"target_" + std::to_string(id) + "\")";
     script += ".insertAdjacentHTML(\"beforeend\", `<span>";
     while(getline(ss, tmp)) {
-        if (tmp.size() != 0) {
             // std::cerr << "tmp is: " << tmp << ", is empty: " << (tmp == "\n" || tmp == "\r\n") << std::endl;
             // std::cerr << "tmp length is: " << tmp.size() << std::endl;
-            script += tmp;
-            if (tmp != "% ") {
-                script += "<br>";
-
-            }
+        script += tmp;
+        if (tmp != "% ") {
+            script += "<br>";
         }
     }
     script += "</span>`);";
