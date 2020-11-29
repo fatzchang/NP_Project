@@ -19,6 +19,17 @@ private:
     std::stringstream full_data_;
     bool is_first_line;
     std::string cgi;
+
+    std::string REQUEST_METHOD;
+    std::string REQUEST_URI;
+    std::string SERVER_PROTOCOL;
+    std::string QUERY_STRING;
+    std::string SERVER_ADDR;
+    std::string SERVER_PORT;
+    std::string REMOTE_ADDR;
+    std::string REMOTE_PORT;
+    std::string HTTP_HOST;
+
     
     void do_read();
     void parse(size_t length);

@@ -11,14 +11,14 @@ server::server(boost::asio::io_context &io_context, short port):
 
 
 void server::do_accept() {
+    std::cout << "Accepting..." << std::endl;
     acceptor_.async_accept([this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket){
         if (!ec) {
-            acceptor_.close();
+            std::cout << "Accept!" << std::endl;
             std::make_shared<session>(std::move(socket))->start();
-            socket.close();
             do_accept();
         } else {
-            std::cerr << "Accept error: " << ec.message() << std::endl;
+            std::cout << "Accept error: " << ec.message() << std::endl;
             do_accept();
         }
         
