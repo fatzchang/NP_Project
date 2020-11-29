@@ -1,4 +1,5 @@
 /http_server
 build
 /console.cgi
+/cgi_server.exe
 /.vscode
