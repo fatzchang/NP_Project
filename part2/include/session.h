@@ -30,7 +30,7 @@ private:
     std::string REMOTE_PORT;
     std::string HTTP_HOST;
 
-    
+    void exec_cgi(std::string cgi);
     void do_read();
     void parse(size_t length);
 };

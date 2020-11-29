@@ -1,9 +1,11 @@
 #include "session.h"
-#include <boost/algorithm/string.hpp>
+#include "html_string.h"
 
+#include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <vector>
 #include <io.h>
+
 
 session::session(boost::asio::ip::tcp::socket socket)
  : socket_(std::move(socket)),
@@ -33,7 +35,7 @@ void session::parse(size_t length) {
     std::string line;
     std::string::size_type index;
     while (std::getline(full_data_, line) && line != "\r") {
-        std::cout << line << std::endl;
+        // std::cout << line << std::endl;
         if (is_first_line) {
             std::vector<std::string> splitVec;
             boost::algorithm::split(splitVec, line, boost::algorithm::is_any_of(" "), boost::algorithm::token_compress_on);
@@ -74,8 +76,32 @@ void session::parse(size_t length) {
         REMOTE_ADDR = remote_endpoint.address().to_string();
         REMOTE_PORT = std::to_string(remote_endpoint.port());
 
-
         // std::cout << SERVER_PROTOCOL << std::flush;
         // std::cout << " 200 OK\r\n" << std::endl;
+        exec_cgi(cgi);
+        // here end first step reading, don't do_read anymore
     }
+}
+
+void session::exec_cgi(std::string cgi) {
+    // auto self(shared_from_this());
+
+    std::string html;
+     if (cgi == "console.cgi") {
+        // exe console.cgi
+        // html = console_html();
+    } else {
+        // exe panel.cgi
+        html = panel_html();
+    }
+
+    std::string response(SERVER_PROTOCOL);
+    response += " 200 OK\r\n";
+    response += html;
+
+    boost::asio::async_write(socket_, boost::asio::buffer(response), 
+        [](boost::system::error_code ec, size_t length){
+            std::cout << "written!" << std::endl;
+        }
+    );
 }
