@@ -19,7 +19,7 @@ std::string panel_html() {
         text += "<select name=\"h" + std::to_string(i) + "\" class=\"custom-select\">";
         text += "<option></option>";
         for (int j = 1; j < 13; j++) {
-            std::string host("nplinx");
+            std::string host("nplinux");
             host += std::to_string(j);
             text += "<option value=\"" + host + ".cs.nctu.edu.tw\">" + host + "</option>";
         }
@@ -40,6 +40,6 @@ std::string panel_html() {
     return text;
 }
 
-// std::string console_html() {
-
-// }
+std::string console_html() {
+    return "";
+}

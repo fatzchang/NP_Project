@@ -15,7 +15,8 @@ void server::do_accept() {
     acceptor_.async_accept([this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket){
         if (!ec) {
             std::cout << "Accept!" << std::endl;
-            std::make_shared<session>(std::move(socket))->start();
+    
+            std::make_shared<session>(std::move(socket), ioc)->start();
             do_accept();
         } else {
             std::cout << "Accept error: " << ec.message() << std::endl;

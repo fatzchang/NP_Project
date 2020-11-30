@@ -6,7 +6,7 @@
 #include <boost/bind.hpp>
 
 
-class server: public std::enable_shared_from_this<server>
+class server
 {
 public:
     server(boost::asio::io_context &io_context, short port);

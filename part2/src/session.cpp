@@ -1,5 +1,6 @@
 #include "session.h"
 #include "html_string.h"
+#include "console.h"
 
 #include <boost/algorithm/string.hpp>
 #include <iostream>
@@ -7,8 +8,9 @@
 #include <io.h>
 
 
-session::session(boost::asio::ip::tcp::socket socket)
+session::session(boost::asio::ip::tcp::socket socket, boost::asio::io_context &io_context)
  : socket_(std::move(socket)),
+   ioc(io_context),
    is_first_line(true) 
 {
 
@@ -30,6 +32,7 @@ void session::do_read() {
     );
 }
 
+// parse request from client
 void session::parse(size_t length) {
     full_data_ << data_.c_array();
     std::string line;
@@ -75,33 +78,30 @@ void session::parse(size_t length) {
         SERVER_PORT = std::to_string(server_endpoint.port());
         REMOTE_ADDR = remote_endpoint.address().to_string();
         REMOTE_PORT = std::to_string(remote_endpoint.port());
-
-        // std::cout << SERVER_PROTOCOL << std::flush;
-        // std::cout << " 200 OK\r\n" << std::endl;
-        exec_cgi(cgi);
+        exec_cgi();
         // here end first step reading, don't do_read anymore
     }
 }
 
-void session::exec_cgi(std::string cgi) {
-    // auto self(shared_from_this());
-
+void session::exec_cgi() {
+    auto self = shared_from_this();
+    std::string response(SERVER_PROTOCOL);
     std::string html;
-     if (cgi == "console.cgi") {
-        // exe console.cgi
-        // html = console_html();
-    } else {
-        // exe panel.cgi
+    response += " 200 OK\r\n";
+
+    if (cgi == "panel.cgi") {
         html = panel_html();
     }
 
-    std::string response(SERVER_PROTOCOL);
-    response += " 200 OK\r\n";
     response += html;
-
     boost::asio::async_write(socket_, boost::asio::buffer(response), 
-        [](boost::system::error_code ec, size_t length){
-            std::cout << "written!" << std::endl;
+        [this, self](boost::system::error_code ec, size_t length){
+            
+            std::cout << "static page written!" << std::endl;
+            if (cgi == "console.cgi") {
+                std::make_shared<console>(std::move(socket_), ioc)->start(QUERY_STRING);
+            }
         }
     );
+
 }

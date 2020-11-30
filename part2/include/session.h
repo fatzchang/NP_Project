@@ -10,10 +10,11 @@
 
 class session: public std::enable_shared_from_this<session> {
 public:
-    session(boost::asio::ip::tcp::socket socket);
+    session(boost::asio::ip::tcp::socket socket, boost::asio::io_context &io_context);
     void start();
 
 private:
+    boost::asio::io_context &ioc;
     boost::asio::ip::tcp::socket socket_;
     boost::array<char, DATA_MAX_LENGTH> data_;
     std::stringstream full_data_;
@@ -30,9 +31,11 @@ private:
     std::string REMOTE_PORT;
     std::string HTTP_HOST;
 
-    void exec_cgi(std::string cgi);
+    void exec_cgi();
     void do_read();
     void parse(size_t length);
+    void do_read_console();
+    void do_write_console();
 };
 
 
