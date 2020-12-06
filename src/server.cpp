@@ -5,6 +5,7 @@
 #include <boost/system/error_code.hpp>
 #include <boost/bind.hpp>
 #include <sys/wait.h>
+#include <memory>
 
 #include <iostream>
 
@@ -47,8 +48,9 @@ void server::do_accept() {
                 acceptor_.close();
                 signal_.cancel();
                 // FIXIT: is it ok without shared pointer?
-                session sn(std::move(socket), ioc_);
-                sn.start();
+                std::make_shared<session>(std::move(socket), ioc_)->start();
+                // TODO: exit ?
+                // exit(0);
             } else {
                 socket.close();
                 do_accept();

@@ -1,29 +1,41 @@
 #ifndef __SESSION_H
 #define __SESSION_H
+#include "main.h"
 
 #include <string>
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
+#include <memory>
 
 using namespace boost::asio;
 
-class session
+class session: public std::enable_shared_from_this<session>
 {
 public:
     session(ip::tcp::socket socket, io_context &ioc);
     void start();
 private:
-    ip::tcp::socket socket_;
+    ip::tcp::socket client_socket_;
+    ip::tcp::socket remote_socket_;
+
+
     io_context &ioc_;
     int8_t cmd_;
     uint16_t dst_port_;
-    int8_t dst_ip_[4];
+    uint32_t dst_ip_;
     std::string userid_;
-    std::string domain_;
-    boost::array<char, 256> buffer_;
+    boost::array<char, MAX_BUFFER_SIZE> client_buffer_;
 
     void parse_request();
     void display_info();
+    ip::address_v4 fetch_ip(std::string domain);
+    void reply();
+    std::string ip_string();
+    void relay();
+    void do_read();
+
+    bool is_connect();
+    bool is_bind();
 };
 
 #endif
