@@ -23,16 +23,19 @@ void session::do_read()
 {
     auto self = shared_from_this();
     client_socket_.async_read_some(buffer(client_buffer_), [this, self](boost::system::error_code error, size_t length){
+        std::cout << client_buffer_.data() << std::flush;
         if (is_connect()) {
             parse_request();
             remote_socket_.connect(ip::tcp::endpoint(ip::address(ip::address_v4(dst_ip_)), dst_port_));
+            do_relay();
             // TODO: read remote socket
             display_info();
             reply();
         } else if (is_bind()) {
 
         } else {
-            relay();
+            // send what received
+            remote_socket_.write_some(buffer(client_buffer_, length));
         }
         do_read();
     });
@@ -109,6 +112,12 @@ std::string session::ip_string()
     return ip;
 }
 
-void session::relay() {
-    // std::cout << client_buffer_.data() << std::endl;
+void session::do_relay() 
+{
+    auto self = shared_from_this();
+    remote_socket_.async_read_some(buffer(remote_buffer_), [this, self](boost::system::error_code error, size_t length) {
+        std::cout << remote_buffer_.data() << std::flush;
+        client_socket_.write_some(buffer(remote_buffer_, length));
+        do_relay();
+    });
 }

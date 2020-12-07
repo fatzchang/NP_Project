@@ -25,13 +25,14 @@ private:
     uint32_t dst_ip_;
     std::string userid_;
     boost::array<char, MAX_BUFFER_SIZE> client_buffer_;
+    boost::array<char, MAX_BUFFER_SIZE> remote_buffer_;
 
     void parse_request();
     void display_info();
     ip::address_v4 fetch_ip(std::string domain);
     void reply();
     std::string ip_string();
-    void relay();
+    void do_relay();
     void do_read();
 
     bool is_connect();
