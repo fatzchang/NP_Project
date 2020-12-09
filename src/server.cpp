@@ -49,8 +49,6 @@ void server::do_accept() {
                 signal_.cancel();
                 // FIXIT: is it ok without shared pointer?
                 std::make_shared<session>(std::move(socket), ioc_)->start();
-                // TODO: exit ?
-                // exit(0);
             } else {
                 socket.close();
                 do_accept();

@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 
 #include <iostream>
+#include <stdlib.h>
 using namespace boost::asio;
 
 session::session(ip::tcp::socket socket, io_context &ioc)
@@ -23,21 +24,26 @@ void session::do_read()
 {
     auto self = shared_from_this();
     client_socket_.async_read_some(buffer(client_buffer_), [this, self](boost::system::error_code error, size_t length){
-        std::cout << client_buffer_.data() << std::flush;
-        if (is_connect()) {
-            parse_request();
-            remote_socket_.connect(ip::tcp::endpoint(ip::address(ip::address_v4(dst_ip_)), dst_port_));
-            do_relay();
-            // TODO: read remote socket
-            display_info();
-            reply();
-        } else if (is_bind()) {
+        if (length != 0) {
+            if (is_connect()) {
+                parse_request();
+                remote_socket_.connect(ip::tcp::endpoint(ip::address(ip::address_v4(dst_ip_)), dst_port_));
+                do_relay();
+                display_info();
+                reply();
+            } else if (is_bind()) {
 
+            } else {
+                // send what received
+                if (remote_socket_.is_open()){
+                    remote_socket_.write_some(buffer(client_buffer_, length));
+                }
+            }
+
+            do_read();
         } else {
-            // send what received
-            remote_socket_.write_some(buffer(client_buffer_, length));
+            client_socket_.close();
         }
-        do_read();
     });
 }
 
@@ -53,9 +59,8 @@ bool session::is_bind()
 
 void session::parse_request()
 {
-    std::cout << "parsing" << std::endl;
     cmd_ = client_buffer_[1];
-    dst_port_ = (client_buffer_[2] << 8) | client_buffer_[3];
+    dst_port_ = (client_buffer_[2] << 8) | ((unsigned char)client_buffer_[3]);
     userid_ = std::string(&client_buffer_[8]);
 
     if ((client_buffer_[4] | client_buffer_[5] | client_buffer_[6]) != 0) {
@@ -67,7 +72,6 @@ void session::parse_request()
         std::string domain = std::string(&client_buffer_[8 + strlen(&client_buffer_[8]) + 1]);
         dst_ip_ = fetch_ip(domain).to_uint();
     }
-    std::cout << "parsed" << std::endl;
 }
 
 void session::display_info()
@@ -113,11 +117,14 @@ std::string session::ip_string()
 }
 
 void session::do_relay() 
-{
+{   
     auto self = shared_from_this();
     remote_socket_.async_read_some(buffer(remote_buffer_), [this, self](boost::system::error_code error, size_t length) {
-        std::cout << remote_buffer_.data() << std::flush;
-        client_socket_.write_some(buffer(remote_buffer_, length));
-        do_relay();
+        if (length != 0) {
+            client_socket_.write_some(buffer(remote_buffer_, length));
+            do_relay();
+        } else {
+            remote_socket_.close();
+        }
     });
 }
