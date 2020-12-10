@@ -37,6 +37,7 @@ private:
 
     bool is_connect();
     bool is_bind();
+    void bind();
 };
 
 #endif

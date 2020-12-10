@@ -1,4 +1,5 @@
 #include "session.h"
+#include "data_channel.h"
 
 #include <boost/asio.hpp>
 #include <memory>
@@ -32,7 +33,10 @@ void session::do_read()
                 display_info();
                 reply();
             } else if (is_bind()) {
-
+                parse_request();
+                printf("bind port: %d\n", dst_port_);
+                bind();
+                reply();
             } else {
                 // send what received
                 if (remote_socket_.is_open()){
@@ -95,13 +99,11 @@ ip::address_v4 session::fetch_ip(std::string domain)
 
 void session::reply()
 {
-    if (cmd_ == 1) {
-        char msg[8];
-        memset(msg, 0, 8);
-        msg[0] = 0;
-        msg[1] = 90;
-        client_socket_.write_some(buffer(msg));
-    }
+    char msg[8];
+    memset(msg, 0, 8);
+    msg[0] = 0;
+    msg[1] = 90;
+    client_socket_.write_some(buffer(msg));
 }
 
 std::string session::ip_string()
@@ -121,10 +123,18 @@ void session::do_relay()
     auto self = shared_from_this();
     remote_socket_.async_read_some(buffer(remote_buffer_), [this, self](boost::system::error_code error, size_t length) {
         if (length != 0) {
-            client_socket_.write_some(buffer(remote_buffer_, length));
+            if (client_socket_.is_open()) {
+                client_socket_.write_some(buffer(remote_buffer_, length));
+            }
             do_relay();
         } else {
             remote_socket_.close();
         }
     });
+}
+
+
+void session::bind()
+{
+
 }
