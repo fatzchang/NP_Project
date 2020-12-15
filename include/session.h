@@ -9,6 +9,7 @@
 
 using namespace boost::asio;
 
+
 class session: public std::enable_shared_from_this<session>
 {
 public:
@@ -17,6 +18,7 @@ public:
 private:
     ip::tcp::socket client_socket_;
     ip::tcp::socket remote_socket_;
+    ip::tcp::socket data_socket_;
 
 
     io_context &ioc_;
@@ -26,18 +28,24 @@ private:
     std::string userid_;
     boost::array<char, MAX_BUFFER_SIZE> client_buffer_;
     boost::array<char, MAX_BUFFER_SIZE> remote_buffer_;
+    boost::array<char, MAX_BUFFER_SIZE> data_buffer_;
 
     void parse_request();
     void display_info();
     ip::address_v4 fetch_ip(std::string domain);
-    void reply();
+    void reply(MODE mode);
     std::string ip_string();
     void do_relay();
+    void do_relay_data();
     void do_read();
 
     bool is_connect();
     bool is_bind();
-    void bind();
+    void bind_op(int16_t port);
+    uint16_t get_unused_port();
+
+
+    ip::tcp::acceptor acceptor_;
 };
 
 #endif

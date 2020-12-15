@@ -3,4 +3,10 @@
 
 #define MAX_BUFFER_SIZE (4096)
 
+
+enum MODE {
+    CONNECT, 
+    BIND
+};
+
 #endif
