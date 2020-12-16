@@ -36,6 +36,8 @@ private:
     uint16_t dst_port_;
     uint16_t bind_port_;
 
+    bool to_data = false;
+
     /************ method ************/
 
     void do_connect();
@@ -48,7 +50,6 @@ private:
     void do_read();
     void do_relay();
     void do_relay_data();
-    void do_read_data();
     void do_listen();
     ip::address_v4 fetch_ip(std::string domain, uint16_t dst_port);
     void connect_reply(bool stat);

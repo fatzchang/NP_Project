@@ -18,14 +18,14 @@ void session::start()
     if (is_connect()) {
         std::cout << "connect command" << std::endl;
         do_connect();
+        do_read();
+        do_relay();
     } else if (is_bind()) {
         std::cout << "bind command" << std::endl;
         do_bind();
-
+        do_read();
+        do_relay();
     }
-
-    do_relay();
-    do_read();
 }
 
 void session::do_connect()
@@ -33,7 +33,6 @@ void session::do_connect()
     bool stat = parse();
     if (stat) {
         remote_socket_.connect(ip::tcp::endpoint(ip::address(ip::address_v4(dst_ip_)), dst_port_));
-        // stat = false if connect failed
     }
 
     display_info(
@@ -64,8 +63,11 @@ void session::do_bind()
     bind_port_ = get_unused_port();
     // TODO: check port is ok
 
+    if (stat) {
+        do_listen();
+    }
+    
     bind_reply(stat);
-    do_listen();
 }
 
 void session::do_listen()
@@ -80,9 +82,9 @@ void session::do_listen()
     acceptor_.async_accept([this](boost::system::error_code ec, ip::tcp::socket socket){
         if (!ec) {
             data_socket_ = std::move(socket);
+            to_data = true;
             bind_reply(true);
             do_relay_data();
-            do_read_data();
         } else {
             std::cout << ec.message() << std::endl;
         }
@@ -92,38 +94,26 @@ void session::do_listen()
 
 void session::do_read()
 {
-    bool is_bind_command = is_bind();
-    auto self = shared_from_this();
-    client_socket_.async_read_some(buffer(client_buffer_), [this, self, is_bind_command](boost::system::error_code error, size_t length){
-        if (length != 0) {
-            if (remote_socket_.is_open()){
-                // std::cout << "do_read writing" << std::endl;
-                boost::asio::write(remote_socket_, buffer(client_buffer_, length));
-            }
-
-            if (!is_bind_command) {
-                // bind command only read once
-                do_read();
-            }
-        }
-    });
-}
-
-void session::do_read_data()
-{
     auto self = shared_from_this();
     client_socket_.async_read_some(buffer(client_buffer_), [this, self](boost::system::error_code error, size_t length){
         if (length != 0) {
-            if (data_socket_.is_open()){
-                // std::cout << "do_read writing" << std::endl;
+            if (!to_data && remote_socket_.is_open()){
+                boost::asio::write(remote_socket_, buffer(client_buffer_, length));
+            }
+
+            if (to_data && data_socket_.is_open()) {
                 boost::asio::write(data_socket_, buffer(client_buffer_, length));
             }
-            do_read_data();
+
+            do_read();
         } else {
-            data_socket_.close();
+            if (to_data) {
+                data_socket_.close();
+            }
         }
     });
 }
+
 
 void session::do_relay() 
 {   
@@ -141,7 +131,7 @@ void session::do_relay()
 
 void session::do_relay_data()
 {
-     auto self = shared_from_this();
+    auto self = shared_from_this();
     data_socket_.async_read_some(buffer(data_buffer_), [this, self](boost::system::error_code error, size_t length) {
         if (client_socket_.is_open()) {
             boost::asio::write(client_socket_, buffer(data_buffer_, length));
