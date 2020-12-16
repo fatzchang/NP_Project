@@ -86,26 +86,23 @@ void remote::do_read_socket() {
                 socket_.close();
                 return;
             }
-            if (length > 0) {
-                std::string data_string(data_.data());
-                data_string = data_string.substr(0, length);
-                cat_data_ += data_string;
+            
+            std::string data_string(data_.data());
+            data_string = data_string.substr(0, length);
+            cat_data_ += data_string;
 
-                if (length < MAX_BUFFER_SIZE && ((cat_data_.back() == '\n') || data_string.find("%") != std::string::npos)) {
-                    if (cat_data_ != " ") {
-                        insert(id_, cat_data_);
-                    }
-                    cat_data_.clear();
+            if (length < MAX_BUFFER_SIZE && ((cat_data_.back() == '\n') || data_string.find("%") != std::string::npos)) {
+                if (cat_data_ != " ") {
+                    insert(id_, cat_data_);
                 }
-
-                if (data_string.find("%") != std::string::npos) {
-                    do_send();
-                }
-
-                do_read_socket();
-            } else {
-                socket_.close();
+                cat_data_.clear();
             }
+
+            if (data_string.find("%") != std::string::npos) {
+                do_send();
+            }
+
+            do_read_socket();
         }
     );
 }
