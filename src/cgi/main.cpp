@@ -23,31 +23,36 @@ int main() {
     for (auto it = splitVec.begin(); it != splitVec.end(); it++) {
         size_t index = it->find("=");
         if ((it->size() - 1) > index) {
-            size_t remote_index = stoi(it->substr(1,1));
-            // remote *r = new remote(remote_index, io_context);
-            std::shared_ptr<remote> r(new remote(remote_index, io_context));
+            std::string column = it->substr(0, index);
+            if (column == "sh") {
 
+            } else if (column == "sp") {
 
-            auto remote_it = remote_list.find(remote_index);
-            bool remote_exist = remote_it != remote_list.end();
-            if (remote_exist) {
-                r = remote_it->second;
-            }
-
-            std::string key = it->substr(0, 1);
-            std::string value = it->substr(index + 1);
-            if (key == "h") {
-                r->host(value);
-            } else if (key == "p") {
-                r->port(stoi(value));
-            } else if (key == "f") {
-                r->file(value);
-            }
-
-            if (remote_exist) {
-                remote_it->second = r;
             } else {
-                remote_list.insert(std::pair<int, std::shared_ptr<remote>>(remote_index, r));
+                size_t remote_index = stoi(it->substr(1,1));
+                std::shared_ptr<remote> r(new remote(remote_index, io_context));
+
+                auto remote_it = remote_list.find(remote_index);
+                bool remote_exist = remote_it != remote_list.end();
+                if (remote_exist) {
+                    r = remote_it->second;
+                }
+
+                std::string key = it->substr(0, 1);
+                std::string value = it->substr(index + 1);
+                if (key == "h") {
+                    r->host(value);
+                } else if (key == "p") {
+                    r->port(stoi(value));
+                } else if (key == "f") {
+                    r->file(value);
+                }
+
+                if (remote_exist) {
+                    remote_it->second = r;
+                } else {
+                    remote_list.insert(std::pair<int, std::shared_ptr<remote>>(remote_index, r));
+                }
             }
         }
     }
