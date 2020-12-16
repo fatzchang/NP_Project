@@ -69,12 +69,12 @@ int main() {
 
 
 void link_remote(std::map<int, std::shared_ptr<remote>> &remote_list, std::string &sh,  std::string &sp) {
-    bool use_sock = (sh.size()) > 0 && (sp.size() > 0);
+    bool use_sock = ((sh.size() > 0) && (sp.size() > 0));
     for (auto it = remote_list.begin(); it != remote_list.end(); it++) {
         if (use_sock) {
-            it->second->connect();
-        } else {
             it->second->connect(sh, sp);
+        } else {
+            it->second->connect();
         }
     }
 }

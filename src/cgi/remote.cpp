@@ -52,16 +52,17 @@ void remote::connect() {
 
 void remote::connect(std::string sh, std::string sp) {
     boost::asio::ip::tcp::resolver resolver(ioc_);
-    boost::asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(sh, sp);
+    boost::asio::ip::tcp::resolver::results_type sock_endpoints = resolver.resolve(sh, sp);
+    boost::asio::connect(socket_, sock_endpoints);
 
-    boost::asio::connect(socket_, endpoints);
 
+    boost::asio::ip::tcp::resolver::results_type target_endpoints = resolver.resolve(host(), std::to_string(port()));
     char msg[sizeof(struct response)];
     struct response res;
     res.vn = 4;
     res.cd = 1;
-    res.dst_ip = htonl(endpoints.begin()->endpoint().address().to_v4().to_uint());
-    res.dst_port = htons((uint16_t) stoi(sp));
+    res.dst_ip = htonl(target_endpoints.begin()->endpoint().address().to_v4().to_uint());
+    res.dst_port = htons((uint16_t) port());
 
     memcpy(msg, &res, sizeof(res));
     boost::asio::write(socket_, buffer(msg));
