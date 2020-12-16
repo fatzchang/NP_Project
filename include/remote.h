@@ -22,6 +22,7 @@ public:
     int id();
 
     void connect();
+    void connect(std::string sh, std::string sp);
 private:
     int id_;
     int port_;

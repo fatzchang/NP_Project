@@ -9,7 +9,7 @@
 #include "renderer.h"
 #include "remote.h"
 
-void link_remote(std::map<int, std::shared_ptr<remote>> &remote_list);
+void link_remote(std::map<int, std::shared_ptr<remote>> &remote_list, std::string &sh, std::string &sp);
 
 int main() {
     std::string q_str(getenv("QUERY_STRING"));
@@ -18,16 +18,17 @@ int main() {
     std::map<int, std::shared_ptr<remote>> remote_list;
 
     boost::asio::io_context io_context;
-
+    std::string sh;
+    std::string sp;
 
     for (auto it = splitVec.begin(); it != splitVec.end(); it++) {
         size_t index = it->find("=");
         if ((it->size() - 1) > index) {
             std::string column = it->substr(0, index);
             if (column == "sh") {
-
+                sh = it->substr(index + 1);
             } else if (column == "sp") {
-
+                sp = it->substr(index + 1);
             } else {
                 size_t remote_index = stoi(it->substr(1,1));
                 std::shared_ptr<remote> r(new remote(remote_index, io_context));
@@ -59,7 +60,7 @@ int main() {
 
     
     render(remote_list);
-    link_remote(remote_list);
+    link_remote(remote_list, sh, sp);
     
     io_context.run();
 
@@ -67,10 +68,13 @@ int main() {
 }
 
 
-void link_remote(std::map<int, std::shared_ptr<remote>> &remote_list) {
-    
-
+void link_remote(std::map<int, std::shared_ptr<remote>> &remote_list, std::string &sh,  std::string &sp) {
+    bool use_sock = (sh.size()) > 0 && (sp.size() > 0);
     for (auto it = remote_list.begin(); it != remote_list.end(); it++) {
-        it->second->connect();
+        if (use_sock) {
+            it->second->connect();
+        } else {
+            it->second->connect(sh, sp);
+        }
     }
 }

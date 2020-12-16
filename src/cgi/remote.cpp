@@ -1,12 +1,15 @@
 #include "main.h"
 #include "remote.h"
 #include "renderer.h"
+#include "session.h"
 
 #include <string>
 #include <iostream>
 #include <memory>
 #include <fstream>
 
+
+#include <stdio.h>
 
 remote::remote(int id, boost::asio::io_context &ioc) 
 : id_(id), socket_(ioc), ioc_(ioc) {}
@@ -47,6 +50,31 @@ void remote::connect() {
     do_read_socket();
 }
 
+void remote::connect(std::string sh, std::string sp) {
+    boost::asio::ip::tcp::resolver resolver(ioc_);
+    boost::asio::ip::tcp::resolver::results_type endpoints = resolver.resolve(sh, sp);
+
+    boost::asio::connect(socket_, endpoints);
+
+    char msg[sizeof(struct response)];
+    struct response res;
+    res.vn = 4;
+    res.cd = 1;
+    res.dst_ip = htonl(endpoints.begin()->endpoint().address().to_v4().to_uint());
+    res.dst_port = htons((uint16_t) stoi(sp));
+
+    memcpy(msg, &res, sizeof(res));
+    boost::asio::write(socket_, buffer(msg));
+
+    boost::array<char, MAX_BUFFER_SIZE> buf;
+    socket_.read_some(buffer(buf));
+
+    printf("response code: %d\n", buf[1]);
+    if (buf[1] == 90) {
+        do_read_socket();
+    }
+}
+
 void remote::do_read_socket() {
     auto self(shared_from_this());
     data_.assign(0);
@@ -58,6 +86,8 @@ void remote::do_read_socket() {
                 socket_.close();
                 return;
             }
+
+            // if ()
             
             std::string data_string(data_.data());
             data_string = data_string.substr(0, length);
