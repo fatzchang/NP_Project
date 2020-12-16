@@ -1,52 +1,58 @@
-// #ifndef __SESSION_H
-// #define __SESSION_H
-// #include "main.h"
+#ifndef __SESSION_H
+#define __SESSION_H
 
-// #include <string>
-// #include <boost/asio.hpp>
-// #include <boost/array.hpp>
-// #include <memory>
+#include "main.h"
 
-// using namespace boost::asio;
+#include <memory>
+#include <boost/asio.hpp>
+#include <boost/array.hpp>
 
+using namespace boost::asio;
 
-// class session: public std::enable_shared_from_this<session>
-// {
-// public:
-//     session(ip::tcp::socket socket, io_context &ioc);
-//     void start();
-// private:
-//     ip::tcp::socket client_socket_;
-//     ip::tcp::socket remote_socket_;
-//     ip::tcp::socket data_socket_;
+struct response {
+    char vn = 0;
+    char cd = 0;
+    int16_t dst_port = 0;
+    int32_t dst_ip = 0;
+};
 
+class session: public std::enable_shared_from_this<session>
+{
+public:
+    session(ip::tcp::socket socket, io_context &ioc);
+    void start();
+private:
+    io_context &ioc_;
+    ip::tcp::acceptor acceptor_;
+    ip::tcp::socket client_socket_;
+    ip::tcp::socket remote_socket_;
+    ip::tcp::socket data_socket_;
 
-//     io_context &ioc_;
-//     int8_t cmd_;
-//     uint16_t dst_port_;
-//     uint32_t dst_ip_;
-//     std::string userid_;
-//     bool isConnected = false;
-//     boost::array<char, MAX_BUFFER_SIZE> client_buffer_;
-//     boost::array<char, MAX_BUFFER_SIZE> remote_buffer_;
-//     boost::array<char, MAX_BUFFER_SIZE> data_buffer_;
+    boost::array<char, MAX_BUFFER_SIZE> client_buffer_;
+    boost::array<char, MAX_BUFFER_SIZE> remote_buffer_;
+    boost::array<char, MAX_BUFFER_SIZE> data_buffer_;
 
-//     void parse_request();
-//     void display_info();
-//     ip::address_v4 fetch_ip(std::string domain);
-//     void reply(MODE mode);
-//     std::string ip_string();
-//     void do_relay();
-//     void do_relay_data();
-//     void do_read();
+    uint32_t dst_ip_;
+    uint16_t dst_port_;
+    uint16_t bind_port_;
 
-//     bool is_connect();
-//     bool is_bind();
-//     void bind_op(int16_t port);
-//     uint16_t get_unused_port();
+    /************ method ************/
 
+    void do_connect();
+    void do_bind();
+    bool is_bind();
+    bool is_connect();
 
-//     ip::tcp::acceptor acceptor_;
-// };
+    bool parse();
+    
+    void do_read();
+    void do_relay();
+    void do_relay_data();
+    void do_read_data();
+    void do_listen();
+    ip::address_v4 fetch_ip(std::string domain, uint16_t dst_port);
+    void connect_reply(bool stat);
+    void bind_reply(bool stat);
+};
 
-// #endif
+#endif
