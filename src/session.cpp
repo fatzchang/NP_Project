@@ -31,6 +31,7 @@ void session::do_read()
         if (length != 0) {
             if (is_connect()) {
                 // connect command
+                std::cout << "connect command" << std::endl;
                 parse_request();
                 remote_socket_.connect(ip::tcp::endpoint(ip::address(ip::address_v4(dst_ip_)), dst_port_));
                 do_relay();
@@ -38,24 +39,27 @@ void session::do_read()
                 reply(MODE::CONNECT);
             } else if (is_bind()) {
                 // bind command
+                std::cout << "bind command" << std::endl;
                 parse_request();
                 display_info();
-                // TODO: bind
                 dst_port_ = get_unused_port();
-                std::cout << "port is " << dst_port_ << std::endl;
-                bind_op(dst_port_);
-                std::cout << "start listening" << std::endl;
+                if (!data_socket_.is_open()) {
+                    bind_op(dst_port_);
+                    std::cout << "binded, start transfer..." << std::endl;
+                }
 
                 reply(MODE::BIND);
             } else {
                 // send what received
                 if (remote_socket_.is_open()){
-                    remote_socket_.write_some(buffer(client_buffer_, length));
+                    boost::asio::write(remote_socket_, buffer(client_buffer_, length));
+                    // remote_socket_.write_some(buffer(client_buffer_, length));
                 }
             }
 
             do_read();
         } else {
+            // std::cout << "close client socket" << std::endl;
             // client_socket_.close();
         }
     });
@@ -125,9 +129,12 @@ void session::reply(MODE mode)
         res.dst_port = htons(dst_port_);
     }
 
-    // printf("vn: %d, cd: %d, port: %u, ip: %s\n", res.vn, res.cd, res.dst_port, ip_string().c_str());
     memcpy(msg, &res, sizeof(res));
-    client_socket_.write_some(buffer(msg));
+    if (client_socket_.is_open()) {
+        client_socket_.write_some(buffer(msg));
+    } else {
+        std::cout << "client_socket_ has closed" << std::endl;
+    }
 }
 
 std::string session::ip_string()
@@ -183,13 +190,17 @@ void session::do_relay_data()
 {   
     auto self = shared_from_this();
     data_socket_.async_read_some(buffer(data_buffer_), [this, self](boost::system::error_code error, size_t length) {
-        if (length != 0) {
-            if (client_socket_.is_open()) {
-                client_socket_.write_some(buffer(data_buffer_, length));
-            }
-            do_relay_data();
-        } else {
+        std::cout << "transfered length: " << length << std::endl;
+        
+        if (client_socket_.is_open()) {
+            int written_len = boost::asio::write(client_socket_, buffer(data_buffer_, length));
+        }
+        
+        if (length == 0) {
+            data_socket_.cancel();
             data_socket_.close();
+        } else {
+            do_relay_data();
         }
     });
 }

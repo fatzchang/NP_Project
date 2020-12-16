@@ -47,7 +47,6 @@ void server::do_accept() {
                 ioc_.notify_fork(boost::asio::io_context::fork_child);
                 acceptor_.close();
                 signal_.cancel();
-                // FIXIT: is it ok without shared pointer?
                 std::make_shared<session>(std::move(socket), ioc_)->start();
             } else {
                 socket.close();
