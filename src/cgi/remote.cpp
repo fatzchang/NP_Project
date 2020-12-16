@@ -70,7 +70,6 @@ void remote::connect(std::string sh, std::string sp) {
     boost::array<char, MAX_BUFFER_SIZE> buf;
     socket_.read_some(buffer(buf));
 
-    printf("response code: %d\n", buf[1]);
     if (buf[1] == 90) {
         do_read_socket();
     }
@@ -87,25 +86,26 @@ void remote::do_read_socket() {
                 socket_.close();
                 return;
             }
+            if (length > 0) {
+                std::string data_string(data_.data());
+                data_string = data_string.substr(0, length);
+                cat_data_ += data_string;
 
-            // if ()
-            
-            std::string data_string(data_.data());
-            data_string = data_string.substr(0, length);
-            cat_data_ += data_string;
-
-            if (length < MAX_BUFFER_SIZE && ((cat_data_.back() == '\n') || data_string.find("%") != std::string::npos)) {
-                if (cat_data_ != " ") {
-                    insert(id_, cat_data_);
+                if (length < MAX_BUFFER_SIZE && ((cat_data_.back() == '\n') || data_string.find("%") != std::string::npos)) {
+                    if (cat_data_ != " ") {
+                        insert(id_, cat_data_);
+                    }
+                    cat_data_.clear();
                 }
-                cat_data_.clear();
-            }
 
-            if (data_string.find("%") != std::string::npos) {
-                do_send();
-            }
+                if (data_string.find("%") != std::string::npos) {
+                    do_send();
+                }
 
-            do_read_socket();
+                do_read_socket();
+            } else {
+                socket_.close();
+            }
         }
     );
 }
