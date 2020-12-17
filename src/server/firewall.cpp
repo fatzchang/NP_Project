@@ -3,37 +3,64 @@
 #include <regex>
 
 std::ifstream firewall::config;
-std::regex ip_reg("(\\d{0,3}|\\*).(\\d{0,3}|\\*).(\\d{0,3}|\\*).(\\d{0,3}|\\*)");
-std::regex config_reg("permit (c|b) (\\d{0,3}|\\*).(\\d{0,3}|\\*).(\\d{0,3}|\\*).(\\d{0,3}|\\*)");
+std::regex ip_reg("(\\d{1,3}|\\*).(\\d{1,3}|\\*).(\\d{1,3}|\\*).(\\d{1,3}|\\*)");
+std::regex c_reg("permit c (\\d{1,3}|\\*).(\\d{1,3}|\\*).(\\d{1,3}|\\*).(\\d{1,3}|\\*)");
+std::regex b_reg("permit b (\\d{1,3}|\\*).(\\d{1,3}|\\*).(\\d{1,3}|\\*).(\\d{1,3}|\\*)");
 
 void firewall::load() 
 {
     config.open("socks.conf");
 }
 
+void firewall::close() 
+{
+    config.close();
+}
+
 bool firewall::check(std::string ip, MODE mode) 
 {
-    // std::smatch traffic_match_result;
-    std::smatch conf_match_result;
-    // regex_match(ip, traffic_match_result, ip_reg);
-
     load();
+    
+    std::smatch traffic_match_result;
+    std::smatch conf_match_result;
+    regex_match(ip, traffic_match_result, ip_reg);
+
     std::string line;
-    while(getline(config, line)) {
-        regex_match(line, conf_match_result, config_reg);
-        //m[1] m[2] m[3] m[4]
-        std::cout << conf_match_result[1].str() << std::endl;
-        std::cout << conf_match_result[2].str() << std::endl;
-        std::cout << conf_match_result[3].str() << std::endl;
-        std::cout << conf_match_result[4].str() << std::endl;
-        std::cout << conf_match_result[5].str() << std::endl;
+    std::regex config_reg;
 
-        // for (auto &match: m) {
-        //     std::cout << match.str() << std::endl;
-        // }
-
-        // std::cout << line << std::endl;
+    // set the corresponding regex
+    if (mode == MODE::CONNECT) {
+        config_reg.assign(c_reg);
+    } else {
+        config_reg.assign(b_reg);
     }
 
-    return true;
+    // feching config file
+    bool permit = false;
+    while(getline(config, line)) {
+        // connect mode only care about c, vice versa
+        if (regex_match(line, conf_match_result, config_reg)) {
+            std::string conf_match, traffic_match;
+            size_t match_counter = 0;
+
+            for (size_t i = 1; i <= 4; i++) {
+                conf_match = conf_match_result[i].str();
+                traffic_match = traffic_match_result[i].str();
+
+                if ((conf_match == "*") || (conf_match == traffic_match)) {
+                    match_counter++;
+                }
+            }
+            permit = (match_counter == 4);
+        };
+
+
+        if (permit) {
+            break;
+        }
+    }
+
+    close();
+
+    return permit;
 }

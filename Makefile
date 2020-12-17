@@ -15,10 +15,6 @@ CGI_BUILD_DIR=${BUILD_DIR}/cgi
 CGI_SRCS=${wildcard ${CGI_SRC_DIR}/*.cpp}
 CGI_OBJS=${patsubst ${CGI_SRC_DIR}/%.cpp, ${CGI_BUILD_DIR}/%.o, ${CGI_SRCS}}
 
-
-a:
-	${CPP} -o firewall -I${INCL_DIR} -std=c++11 test.cpp src/server/firewall.cpp
-
 all: ${SERVER_EXEC} ${CGI_EXEC}
 
 ${SERVER_EXEC}: ${SERVER_OBJS}	

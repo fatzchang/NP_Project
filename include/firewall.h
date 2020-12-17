@@ -9,6 +9,7 @@ public:
     static bool check(std::string ip, MODE mode);
 private:
     static void load();
+    static void close();
     static std::ifstream config;
 };
 
