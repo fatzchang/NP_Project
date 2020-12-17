@@ -30,7 +30,7 @@ void session::start()
             if (firewall::check(client_ip, MODE::BIND)) {
                 do_bind();
             } else {
-
+                bind_reply(false);
             }
         }
 
