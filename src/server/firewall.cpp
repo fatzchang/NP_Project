@@ -20,6 +20,10 @@ void firewall::close()
 bool firewall::check(std::string ip, MODE mode) 
 {
     load();
+    // if no config file, directly allow
+    if (!config.is_open()) {
+        return true;
+    }
     
     std::smatch traffic_match_result;
     std::smatch conf_match_result;
