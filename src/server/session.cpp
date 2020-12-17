@@ -1,6 +1,7 @@
 #include "session.h"
 #include "display.h"
 #include "network.h"
+#include "firewall.h"
 #include <boost/asio.hpp>
 #include <iostream>
 
@@ -14,17 +15,29 @@ session::session(ip::tcp::socket socket, io_context &ioc)
 
 void session::start()
 {
-    client_socket_.read_some(buffer(client_buffer_));
-    if (is_connect()) {
-        std::cout << "connect command" << std::endl;
-        do_connect();
+    try {
+        client_socket_.read_some(buffer(client_buffer_));
+
+        std::string client_ip = client_socket_.remote_endpoint().address().to_v4().to_string();
+
+        if (is_connect()) {
+            if (firewall::check(client_ip, MODE::CONNECT)) {
+                do_connect();
+            } else {
+                connect_reply(false);
+            }
+        } else if (is_bind()) {
+            if (firewall::check(client_ip, MODE::BIND)) {
+                do_bind();
+            } else {
+
+            }
+        }
+
         do_read();
         do_relay();
-    } else if (is_bind()) {
-        std::cout << "bind command" << std::endl;
-        do_bind();
-        do_read();
-        do_relay();
+    } catch(boost::wrapexcept<boost::system::system_error> ec) {
+
     }
 }
 
@@ -169,7 +182,9 @@ void session::bind_reply(bool stat)
     char msg[sizeof(struct response)];
     struct response res;
     res.cd = stat? 90 : 91;
-    res.dst_port = htons(bind_port_);
+    if (stat) {
+        res.dst_port = htons(bind_port_);
+    }
 
     memcpy(msg, &res, sizeof(res));
     boost::asio::write(client_socket_, buffer(msg));
