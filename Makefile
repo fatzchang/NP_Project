@@ -16,6 +16,9 @@ CGI_SRCS=${wildcard ${CGI_SRC_DIR}/*.cpp}
 CGI_OBJS=${patsubst ${CGI_SRC_DIR}/%.cpp, ${CGI_BUILD_DIR}/%.o, ${CGI_SRCS}}
 
 
+a:
+	${CPP} -o firewall -I${INCL_DIR} -std=c++11 test.cpp src/server/firewall.cpp
+
 all: ${SERVER_EXEC} ${CGI_EXEC}
 
 ${SERVER_EXEC}: ${SERVER_OBJS}	
@@ -24,11 +27,6 @@ ${SERVER_EXEC}: ${SERVER_OBJS}
 ${SERVER_BUILD_DIR}/%.o: ${SERVER_SRC_DIR}/%.cpp ${INCL_DIR}/%.h
 	@mkdir -p ${@D}
 	${CPP} -c $< -o $@ -I${INCL_DIR} -std=c++11
-
-
-
-
-
 
 ${CGI_EXEC}: ${CGI_OBJS}
 	${CPP} -o ${CGI_EXEC} ${CGI_OBJS} -lpthread
