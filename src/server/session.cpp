@@ -18,20 +18,10 @@ void session::start()
     try {
         client_socket_.read_some(buffer(client_buffer_));
 
-        std::string client_ip = client_socket_.remote_endpoint().address().to_v4().to_string();
-
         if (is_connect()) {
-            if (firewall::check(client_ip, MODE::CONNECT)) {
-                do_connect();
-            } else {
-                connect_reply(false);
-            }
+            do_connect();
         } else if (is_bind()) {
-            if (firewall::check(client_ip, MODE::BIND)) {
-                do_bind();
-            } else {
-                bind_reply(false);
-            }
+            do_bind();
         }
 
         do_read();
@@ -45,8 +35,15 @@ void session::do_connect()
 {
     bool stat = parse();
     if (stat) {
+        std::string client_ip = client_socket_.remote_endpoint().address().to_v4().to_string();
+        stat = (stat && firewall::check(client_ip, MODE::CONNECT));
+    }
+
+    if (stat) {
         remote_socket_.connect(ip::tcp::endpoint(ip::address(ip::address_v4(dst_ip_)), dst_port_));
     }
+
+    
 
     display_info(
         client_socket_.remote_endpoint().address().to_string().c_str(), 
@@ -63,6 +60,11 @@ void session::do_connect()
 void session::do_bind()
 {
     bool stat = parse();
+    if (stat) {
+        std::string client_ip = client_socket_.remote_endpoint().address().to_v4().to_string();
+        stat = (stat && firewall::check(client_ip, MODE::BIND));
+    }
+
     display_info(
         client_socket_.remote_endpoint().address().to_string().c_str(), 
         client_socket_.remote_endpoint().port(), 
@@ -72,11 +74,11 @@ void session::do_bind()
         stat
     );
 
-    // get an unuse port
-    bind_port_ = get_unused_port();
-    // TODO: check port is ok
-
     if (stat) {
+        // get an unuse port
+        bind_port_ = get_unused_port();
+        // TODO: check port is ok
+
         do_listen();
     }
     
