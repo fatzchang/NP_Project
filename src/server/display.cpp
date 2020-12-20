@@ -12,7 +12,11 @@ void display_info(const char *s_ip, uint16_t s_port, const char *d_ip, uint16_t 
     printf("<D_IP>: %s\n", d_ip);
     printf("<D_PORT>: %d\n", d_port);
     cmd == 1 ? printf("<Command>: CONNECT\n") : printf("<Command>: BIND\n");
-    printf("<Reply>: Accept\n\n");
+    if (stat) {
+        printf("<Reply>: Accept\n\n");
+    } else {
+        printf("<Reply>: Reject\n\n");
+    }
 }
 
 
